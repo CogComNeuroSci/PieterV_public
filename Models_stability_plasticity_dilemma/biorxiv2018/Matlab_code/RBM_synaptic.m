@@ -1,4 +1,6 @@
-
+%{
+  Script for the synaptic RBM model
+%}
 %% Defining amount of loops
 Rep=10;                         %amount of replications
 iterations=5;                   %number of iterations in negative phase

@@ -1,4 +1,8 @@
+%{
+    Script for analyses of backpropagation data
+%}
 
+%% define variables
 Rep=10;
 betas=11;
 Tr=2400;
@@ -18,6 +22,7 @@ Switcher=zeros(Tr+1,betas,Rep);
 
 gam_wav=zeros(16,500,Tr);
 
+%% load data
 for b=1:betas
     for r=1:Rep
         
@@ -49,6 +54,8 @@ for b=1:betas
     end;
 end;
 
+%% analyses
+%accuracy
 mean_ACC_conn=squeeze(mean(Accuracy_conn,3));
 mean_ERR_conn=squeeze(mean(ERR_conn,3));
 CI_ACC_conn=squeeze(2*std(Accuracy_conn,0,3)./sqrt(Rep));
@@ -63,6 +70,7 @@ CI_ERR_sync=squeeze(2*std(ERR_sync,0,3)./sqrt(Rep));
 overall_ACC_sync=mean(mean_ACC_sync,1);
 CI_all_acc_sync=(2*squeeze(std(mean(Accuracy_sync,1),0,3))./sqrt(Rep));
 
+%% stability-plasticity measures
 %determine critical moments
 start=1:5;          %first 5 trials
 end_one=15:19;      %last 5 trials before switch 1
@@ -103,7 +111,7 @@ std_stab_conn=std(stability_conn,0,2);
 CI_stab_conn=2*std_stab_conn./sqrt(Rep);
 
 
-%% empirical stuff
+%% Synchronization
 %compute means     
 sync_rule1=zeros(6,4,Tr,betas,Rep);
 sync_rule2=zeros(6,4,Tr,betas,Rep);
@@ -122,7 +130,6 @@ for b=1:betas
     end;
 end;
 
-%% begin
 sync_rule1=squeeze(mean(mean(sync_rule1,1),2));
 sync_rule2=squeeze(mean(mean(sync_rule2,1),2));
 
@@ -137,7 +144,6 @@ std_sync_rule2=std(sync_rule2,0,3);
 CI_sync_rule1=2*(std_sync_rule1./sqrt(Rep));
 CI_sync_rule2=2*(std_sync_rule2./sqrt(Rep));
 
-%% begin
 %extract theta-phase
 Theta_Phase=zeros(500,Tr,betas,Rep);
 %actual pac measure (dpac(Van driel et al., 2015))
@@ -152,18 +158,12 @@ for b=1:betas
     end;
 end;
 
-%% begin
 % compute mean, std and 95% CI
 mean_pac=squeeze(mean(dpac,3));
 std_pac=std(dpac,0,3);
 CI_pac=2*(std_pac./sqrt(Rep));
 
-%relation between synchronization and RT
-relevant_sync(1:800,:,:)=squeeze(sync_rule1(1:800,:,:));
-relevant_sync(801:1600,:,:)=squeeze(sync_rule2(801:1600,:,:));
-relevant_sync(1601:2400,:,:)=squeeze(sync_rule1(1601:2400,:,:));
-
-%% ERN
+%% Time frequency and ERP
 srate=500;
 frex    = linspace(1,10,10);
 wavtime = -2:1/srate:2-1/srate;
@@ -184,7 +184,6 @@ for fi=1:10
     cmwX(fi,:) = cmwX(fi,:) ./ max(cmwX(fi,:));
 end
 
-%%
 ERN_dat=zeros(750,Tr*betas*Rep);
 corr_dat=zeros(750,Tr*betas*Rep);
 ERN_sim=zeros(750,betas,Rep);
@@ -192,7 +191,8 @@ ERN_sim=zeros(750,betas,Rep);
 prev_err=1;
 err=0;
 corr=0;
-%%
+
+
 for b=1:betas
     for r=1:Rep
         bet_err=0;
@@ -211,7 +211,6 @@ for b=1:betas
     end;
 end;
 
-%%
 ERN_dat=ERN_dat(:,1:err);
 corr_dat=corr_dat(:,1:corr);
 ERN_all=mean(ERN_dat,2);
@@ -238,7 +237,6 @@ for i=1:size(ERN_dat,2)
     end % end frequency loop
 end;
 
-%%
 tf_dat_corr=zeros(size(corr_dat,2),10,750-1,3);
 
 for i=1:size(corr_dat,2)
@@ -264,5 +262,6 @@ end;
 freq_corr=squeeze(mean(tf_dat_corr(:,:,:,1),1));
 freq_err=squeeze(mean(tf_dat_err(:,:,:,1),1));
 freq_diff=freq_err-freq_corr;
-%%
+              
+%% save
 save('backprop_data_180914','CI_ACC_conn','CI_ACC_sync','CI_all_acc_conn','CI_all_acc_sync','CI_pac','CI_plas_conn','CI_plas_sync','CI_stab_conn','CI_stab_sync','CI_sync_rule1','CI_sync_rule2','ERN_all','ERN_sim','freq_corr','freq_err','freq_diff','mean_ACC_conn','mean_ACC_sync','mean_pac','mean_plas_conn','mean_plas_sync','mean_stab_conn','mean_stab_sync','mean_sync_rule1','mean_sync_rule2','overall_ACC_conn','overall_ACC_sync','Switcher','A','B','C','sync_A','sync_B','sync_C')

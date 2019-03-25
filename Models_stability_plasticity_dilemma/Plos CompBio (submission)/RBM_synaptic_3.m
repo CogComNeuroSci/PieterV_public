@@ -1,3 +1,6 @@
+%{
+    Script for running the synaptic RBM model
+%}
 
 %% Defining amount of loops
 Rep=10;                         %amount of replications
@@ -144,9 +147,9 @@ Rate_Out_plus=zeros(nResp,Tr);                     %Output neurons positive phas
 
 net_M1_plus=zeros(nM1,Tr);                         %net input hidden layer positive phase
 
-Rate_Input_min=zeros(nStim,Tr,iterations);                    %Input neurons negative phase
-Rate_M1_min=zeros(nM1,Tr,iterations);            %Hidden neurons negative phase
-Rate_Out_min=zeros(nResp,Tr,iterations);         %Output neurons negative phase
+Rate_Input_min=zeros(nStim,Tr,iterations);         %Input neurons negative phase
+Rate_M1_min=zeros(nM1,Tr,iterations);              %Hidden neurons negative phase
+Rate_Out_min=zeros(nResp,Tr,iterations);           %Output neurons negative phase
 
 net_M1_min=zeros(nM1,Tr,iterations);               %net input hidden layer negative phase
 net_Out_min=zeros(nResp,Tr,iterations);            %net input output layer negative phase
@@ -245,23 +248,7 @@ for trial=1:Tr
     prog=trial
 end;
 
-%% track learning by accuracy over bins
- %nbins=20;
- %binned_Errorscore_min=zeros(1,nbins*3);
- %binned_accuracy_min=zeros(1,nbins*3);
- %binned_Errorscore_test=zeros(1,nbins*3);
- %binned_accuracy_test=zeros(1,nbins*3);
-
- %bin_edges=zeros(1,(nbins*3)+1);
- 
- %bin_edges(1,1:nbins+1)=0:POT_1/nbins:POT_1;
- %bin_edges(1,nbins+1:(nbins*2)+1)=POT_1:POT_1/nbins:POT_2;
- %bin_edges(1,(2*nbins)+1:(nbins*3)+1)=POT_2:POT_1/nbins:Tr; 
-  
- %for bin=1:nbins*3
- %    binned_Errorscore_min(1,bin)=mean(mean(Errorscore(:,(bin_edges(bin)+1):bin_edges(bin+1))));
- %    binned_accuracy_min(1,bin)=mean(rew(1,(bin_edges(bin)+1):bin_edges(bin+1)));
- %end;
+ %% save
  save(['RBM_nosync_Beta',num2str(b),'Rep',num2str(r)],'Errorscore','rew');
     end;
 end;

@@ -1,3 +1,6 @@
+%{
+   Script for the synaptic RW model
+%}
 %% Defining amount of loops
 Rep=10;                     % amount of replications
 Tr=240;                      % amount of trials
@@ -86,6 +89,6 @@ rew=zeros(1,Tr);                %reward or accuracy
         end;
     prog=trial
     end;
-    save(['Beta',num2str(b),'Rep',num2str(r),'_RWonly']); %write data to file with beta iteration, epsilon iteration and replication as name
+    save(['Beta',num2str(b),'Rep',num2str(r),'_RWonly']); %write data to file with beta iteration and replication as name
     end; 
 end;

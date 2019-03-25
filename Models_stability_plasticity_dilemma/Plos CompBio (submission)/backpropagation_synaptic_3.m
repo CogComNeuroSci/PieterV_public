@@ -1,23 +1,26 @@
+%{
+    Script for running the synaptic BP model for the three-dimensional task
+%}
 
 %% Defining amount of loops
-Rep=10;                 %amount of replications
-Tr=3600;                %amount of trials
-betas=11;               %beta iterations
+Rep=10;                         %amount of replications
+Tr=3600;                        %amount of trials
+betas=11;                       %beta iterations
 beta=0:1/(betas-1):1;           %values of beta (learning rate)
 
-POT=Tr/6:Tr/6:Tr;                 %point of switch to task rule 2 (trial 20)
-part1=1:POT(1);                   %first part
-part2=POT(1)+1:POT(2);            %second part
-part3=POT(2)+1:POT(3);                %third part
+POT=Tr/6:Tr/6:Tr;               %point of switch to task rule 2 (trial 20)
+part1=1:POT(1);                 %first part
+part2=POT(1)+1:POT(2);          %second part
+part3=POT(2)+1:POT(3);          %third part
 part4=POT(3)+1:POT(4);
 part5=POT(4)+1:POT(5);
 part6=POT(5)+1:POT(6);
 %% basic model build-up
-nStim=13;                %number input units
-nM1=6;                  %number hidden units in module 1
-nResp=3;                %number of response options
-nInput=81;               %number of input patterns
-bias=5;                 %bias parameter
+nStim=13;                       %number input units
+nM1=6;                          %number hidden units in module 1
+nResp=3;                        %number of response options
+nInput=81;                      %number of input patterns
+bias=5;                         %bias parameter
 
 %% in- and output patterns
 Activation=zeros(nStim,nInput);      %input patterns
@@ -169,10 +172,7 @@ Z=zeros(nStim,Tr);
 response=zeros(3,Tr);               %track responses
 rew=zeros(1,Tr);                    %track accuracy
 
-%% Model
-%while trial <201 ||  mean(mean(Errorscore(:,trial-200:trial),1),2)>0.05
- %trial=trial+1;
-%loop to test until convergence
+%% the model
 
 %trial loop
 for trial=1:Tr
@@ -221,20 +221,7 @@ for trial=1:Tr
     prog=trial
 end;
 
-%% track learning by accuracy over bins
- %nbins=20;
- %binned_Errorscore=zeros(1,nbins*3);
- %binned_accuracy=zeros(1,nbins*3);
- %bin_edges=zeros(1,(nbins*3)+1);
- 
- %bin_edges(1,1:nbins+1)=0:POT(1)/nbins:POT(1);
- %bin_edges(1,nbins+1:(nbins*2)+1)=POT(1):POT(1)/nbins:Tr;
- %bin_edges(1,(2*nbins)+1:(nbins*3)+1)=POT(2):POT(1)/nbins:Tr; 
-  
- %for bin=1:nbins*3
- %    binned_Errorscore(1,bin)=mean(mean(Errorscore(:,(bin_edges(bin)+1):bin_edges(bin+1))));
- %    binned_accuracy(1,bin)=mean(rew(1,(bin_edges(bin)+1):bin_edges(bin+1)));
- %end;
+    %% save data
     save(['backprop_nosync_Beta',num2str(b),'Rep',num2str(r)],'rew', 'Errorscore');
     end;
 end;

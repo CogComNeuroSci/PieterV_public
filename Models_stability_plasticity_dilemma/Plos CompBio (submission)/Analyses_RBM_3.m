@@ -1,8 +1,16 @@
+%{
+    script for the analyses of the RBM model on the three dimensional task
+%}
+
+%% Define variables
+
+%Amounts of everything
 Rep=10;
 betas=11;
 bins=120;
 Tr=3600;
 
+%initialize all data matrices
 Accuracy_conn=zeros(Tr,betas,Rep);
 ERR_conn=zeros(Tr,betas,Rep);
 Accuracy_sync=zeros(Tr,betas,Rep);
@@ -12,6 +20,8 @@ synchronization_IM2=zeros(12,6,Tr,betas,Rep);
 synchronization_IM3=zeros(12,6,Tr,betas,Rep);
 module=zeros(2,betas,Rep);
 Switcher=zeros(Tr+1,betas,Rep);
+
+%% load data and store in data matrices
 
 for b=1:betas
 for rep=1:Rep
@@ -28,6 +38,7 @@ for rep=1:Rep
     synchronization_IM2(:,:,:,b,rep)=sync_IM2;
     synchronization_IM3(:,:,:,b,rep)=sync_IM3;
 
+    %derive which module was used first, second and third
     if LFC(2,1)==1
         module(1,b,rep)=1;
     elseif LFC(3,1)==1
@@ -45,6 +56,9 @@ for rep=1:Rep
 end;
 end;
 
+%% General performance of the synaptic model
+
+%compute binned accuracy: divide 3600 trials in 120 bins
 binned_accuracy_conn=zeros(120,betas,Rep);
 binned_errorscore_conn=zeros(120,betas,Rep);
 bin_edges=(1:Tr/120:Tr+1)-1;
@@ -53,6 +67,7 @@ for i =1:length(bin_edges)-1
     binned_errorscore_conn(i,:,:)=mean(ERR_conn(bin_edges(i)+1:bin_edges(i+1),:,:),1);
 end;
 
+%compute means and confidence intervals (accuracy and errorscore)
 mean_ACC_conn=squeeze(mean(Accuracy_conn,3));
 mean_ERR_conn=squeeze(mean(ERR_conn,3));
 CI_ACC_conn=squeeze(2*std(Accuracy_conn,0,3)./sqrt(Rep));
@@ -60,6 +75,9 @@ CI_ERR_conn=squeeze(2*std(ERR_conn,0,3)./sqrt(Rep));
 overall_ACC_conn=mean(mean_ACC_conn,1);
 CI_all_acc_conn=(2*squeeze(std(mean(Accuracy_conn,1),0,3))./sqrt(Rep));
 
+%% General performance of the full model
+
+%compute binned accuracy: divide 3600 trials in 120 bins
 binned_accuracy_sync=zeros(120,betas,Rep);
 binned_errorscore_sync=zeros(120,betas,Rep);
 for i =1:length(bin_edges)-1
@@ -67,6 +85,7 @@ for i =1:length(bin_edges)-1
     binned_errorscore_sync(i,:,:)=mean(ERR_sync(bin_edges(i)+1:bin_edges(i+1),:,:),1);
 end;
 
+%compute means and confidence intervals (accuracy and errorscore)
 mean_ACC_sync=squeeze(mean(Accuracy_sync,3));
 mean_ERR_sync=squeeze(mean(ERR_sync,3));
 CI_ACC_sync=squeeze(2*std(Accuracy_sync,0,3)./sqrt(Rep));
@@ -74,7 +93,9 @@ CI_ERR_sync=squeeze(2*std(ERR_sync,0,3)./sqrt(Rep));
 overall_ACC_sync=mean(mean_ACC_sync,1);
 CI_all_acc_sync=(2*squeeze(std(mean(Accuracy_sync,1),0,3))./sqrt(Rep));
 
-%determine critical moments
+%% Compute stability and plasticity for both models
+
+%determine critical moments to compute stability and plasticity values (in trial bins)
 stability_R1_1=15:20;
 stability_R1_2=61:65;
 stability_R2_1=35:40;
@@ -85,7 +106,7 @@ plasticity_1=1:5;
 plasticity_2=21:25;
 plasticity_3=41:60;
 
-%Compute stability and plasticity for both models
+% The synaptic model
 Stability_conn(1,:,:)=mean(binned_accuracy_conn(stability_R1_2,:,:),1)-mean(binned_accuracy_conn(stability_R1_1,:,:),1);
 Stability_conn(2,:,:)=mean(binned_accuracy_conn(stability_R2_2,:,:),1)-mean(binned_accuracy_conn(stability_R2_1,:,:),1);
 Stability_conn(3,:,:)=mean(binned_accuracy_conn(stability_R3_2,:,:),1)-mean(binned_accuracy_conn(stability_R3_1,:,:),1);
@@ -94,6 +115,7 @@ Plasticity_conn(1,:,:)=mean(binned_accuracy_conn(plasticity_1,:,:),1);
 Plasticity_conn(2,:,:)=mean(binned_accuracy_conn(plasticity_2,:,:),1);
 Plasticity_conn(3,:,:)=mean(binned_accuracy_conn(plasticity_3,:,:),1);
 
+% The full model
 Stability_sync(1,:,:)=mean(binned_accuracy_sync(stability_R1_2,:,:),1)-mean(binned_accuracy_sync(stability_R1_1,:,:),1);
 Stability_sync(2,:,:)=mean(binned_accuracy_sync(stability_R2_2,:,:),1)-mean(binned_accuracy_sync(stability_R2_1,:,:),1);
 Stability_sync(3,:,:)=mean(binned_accuracy_sync(stability_R3_2,:,:),1)-mean(binned_accuracy_sync(stability_R3_1,:,:),1);
@@ -102,6 +124,7 @@ Plasticity_sync(1,:,:)=mean(binned_accuracy_sync(plasticity_1,:,:),1);
 Plasticity_sync(2,:,:)=mean(binned_accuracy_sync(plasticity_2,:,:),1);
 Plasticity_sync(3,:,:)=mean(binned_accuracy_sync(plasticity_3,:,:),1);
 
+% Average and confidence intervals
 mean_plas_sync=mean(Plasticity_sync,3);
 std_plas_sync=std(Plasticity_sync,0,3);
 CI_plas_sync=2*std_plas_sync./sqrt(Rep);
@@ -126,12 +149,14 @@ Plas_conn_for_paper(2,:)=mean(CI_plas_conn(2:3,:),1);
 Stab_conn_for_paper(1,:)=mean(mean_stab_conn,1);
 Stab_conn_for_paper(2,:)=mean(CI_stab_conn,1);
 
-%% empirical stuff
+%% Synchronization of task modules
+
 %compute means     
 sync_rule1=zeros(12,6,Tr,betas,Rep);
 sync_rule2=zeros(12,6,Tr,betas,Rep);
 sync_rule3=zeros(12,6,Tr,betas,Rep);
 
+% check according to the chosen module for every task rule
 for b=1:betas
     for r=1:Rep
         if module(1,b,r)==1
@@ -165,7 +190,7 @@ for b=1:betas
     end;
 end;
 
-%% begin
+% average and confidence intervals
 sync_rule1=squeeze(mean(mean(sync_rule1,1),2));
 sync_rule2=squeeze(mean(mean(sync_rule2,1),2));
 sync_rule3=squeeze(mean(mean(sync_rule3,1),2));
@@ -174,14 +199,13 @@ mean_sync_rule1=squeeze(mean(sync_rule1,3));
 mean_sync_rule2=squeeze(mean(sync_rule2,3));
 mean_sync_rule3=squeeze(mean(sync_rule3,3));
 
-%compute standard deviations
 std_sync_rule1=std(sync_rule1,0,3);
 std_sync_rule2=std(sync_rule2,0,3);
 std_sync_rule3=std(sync_rule3,0,3);
 
-%compute 95% confidence interval
 CI_sync_rule1=2*(std_sync_rule1./sqrt(Rep));
 CI_sync_rule2=2*(std_sync_rule2./sqrt(Rep));
 CI_sync_rule3=2*(std_sync_rule3./sqrt(Rep));
 
+%% save
 save('RBM_data_','CI_ACC_conn','CI_ACC_sync','CI_all_acc_conn','CI_all_acc_sync','CI_plas_conn','CI_plas_sync','CI_stab_conn','CI_stab_sync','CI_sync_rule1','CI_sync_rule2','CI_sync_rule3','mean_ACC_conn','mean_ACC_sync','mean_plas_conn','mean_plas_sync','mean_stab_conn','mean_stab_sync','mean_sync_rule1','mean_sync_rule2','mean_sync_rule3','overall_ACC_conn','overall_ACC_sync','Switcher','binned_accuracy_sync', 'binned_accuracy_conn')

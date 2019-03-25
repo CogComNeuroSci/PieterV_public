@@ -1,4 +1,6 @@
-
+%{
+    Script for main text parameter exploration 
+%}
 %% Defining amount of loops
 T=500;                  %trialtime
 Tr=360;                 % amount of trials

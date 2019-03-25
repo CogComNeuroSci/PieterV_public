@@ -1,4 +1,6 @@
-
+%{
+   Script for RW model RL parameter exploration
+%}
 %% Defining amount of loops
 T=500;                  %trialtime
 Tr=360;                 % amount of trials

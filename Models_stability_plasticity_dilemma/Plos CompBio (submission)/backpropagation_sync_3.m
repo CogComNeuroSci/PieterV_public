@@ -1,23 +1,27 @@
+%{
+    Script for running the full BP model for the three-dimensional task
+%}
 
 %% Defining amount of loops
 Rep=10;                         %amount of replications
-T=500;                         %trialtime
+T=500;                          %trialtime
 Tr=3600;                        %amount of trials
 betas=11;                       %beta iterations
-beta=0:1/(betas-1):1;                   %values of beta (learning rate)
+beta=0:1/(betas-1):1;           %values of beta (learning rate)
 ITI=250;
 
 POT=Tr/6:Tr/6:Tr;                 %point of switch to task rule 2 (trial 20)
 part1=1:POT(1);                   %first part
 part2=POT(1)+1:POT(2);            %second part
-part3=POT(2)+1:POT(3);                %third part
+part3=POT(2)+1:POT(3);            %third part
 part4=POT(3)+1:POT(4);
 part5=POT(4)+1:POT(5);
 part6=POT(5)+1:POT(6);
+
 %% Model build-up
-% Processing module
-nStim=13;                %number input units
-nM1=6;                   %number hidden units in module 1
+% Processing unit
+nStim=13;                %number input nodes
+nM1=6;                   %number hidden nodes in module 1
 nM2=6;
 nM3=6;
 nResp=3;                 %number of response options
@@ -29,13 +33,13 @@ Cg=0.58;                 %coupling gamma waves
 damp=0.3;                %damping parameter
 decay=0.9;               %decay parameter
 
-%Control module
-r2_acc=0.05;               %radius ACC
-Ct=0.07;                %coupling theta waves
-damp_acc=0.003;          %damping parameter ACC
-acc_slope=10;           %acc slope parameter
+%Control unit
+r2_acc=0.05;             %radius pMFC
+Ct=0.07;                 %coupling theta waves
+damp_acc=0.003;          %damping parameter pMFC
+acc_slope=10;
 
-%Critic
+%RL unit
 lp=0.01;                %learning parameter critic
 
 %% in- and output patterns
@@ -150,10 +154,10 @@ Objective(1,R2,[part3, part6])=1;
 Objective(2,R3,[part3, part6])=1;
 
 %% simulation loops
-for b=11:betas
-    for r=10:Rep
-%% initialization model
-%Processing module
+for b=1:betas
+    for r=1:Rep
+
+%% Processing unit
 Phase_Input=zeros(nStim,2,T,Tr); %phase neurons input layer
 Rate_Input=zeros(nStim,T,Tr);    %rate neurons input layer
 
@@ -169,10 +173,10 @@ Rate_M3=zeros(nM3,T,Tr);        %rate neurons hidden module 2
 Phase_Out=zeros(nResp,2,T,Tr);  %phase neurons output layer
 Rate_Out=zeros(nResp,T,Tr);     %rate neurons output layer
 
-net_M1=zeros(nM1,T,Tr);         %net_input received by hidden units M1
-net_M2=zeros(nM2,T,Tr);         %net_input received by hidden units M2
-net_M3=zeros(nM3,T,Tr);         %net_input received by hidden units M3
-net_Out=zeros(nResp,T,Tr);      %net_input received by output units
+net_M1=zeros(nM1,T,Tr);         %net_input received by hidden nodes M1
+net_M2=zeros(nM2,T,Tr);         %net_input received by hidden nodes M2
+net_M3=zeros(nM3,T,Tr);         %net_input received by hidden nodes M3
+net_Out=zeros(nResp,T,Tr);      %net_input received by output nodes
 
 %weights
 W_IM1=zeros(nStim,nM1,Tr);      %input to hidden M1
@@ -190,6 +194,8 @@ W_M1O(:,:,1)=rand(nM1,nResp)*2.5;
 W_M2O(:,:,1)=rand(nM2,nResp)*2.5;
 W_M3O(:,:,1)=rand(nM3,nResp)*2.5;
 
+%% Control unit
+%choose random start module
 Modules=1:3;
 stm=datasample(Modules,1);
 
@@ -198,24 +204,26 @@ LFC(1,1)=1;
 LFC(stm+1,1)=1;
 Inhibition=zeros(length(Modules),Tr);
 
-ACC=zeros(2,T,Tr);           %ACC phase units
-Be=zeros(T,Tr);              %bernoulli (rate code ACC)
+% Note!: The model pMFC = ACC in the code
+ACC=zeros(2,T,Tr);           %pMFC phase units
+Be=zeros(T,Tr);              %bernoulli (rate code pMFC)
 
-% Critic
+%% RL unit
 rew=zeros(1,Tr);            %reward/accuracy record
-V=zeros(1,Tr);              %value unit
-S=zeros(1,Tr);              %switch unit
+V=zeros(1,Tr);              %value neuron
+S=zeros(1,Tr);              %switch neuron
 E=zeros(nmod,Tr);           %value weights with LFC
 E(:,1)=0.5;                 %initial values
 negPE=zeros(1,Tr);          %negative prediction error
 posPE=zeros(1,Tr);          %positive prediction error
 
-%% Learning parameters
+%% Learning
 Errorscore=zeros(nResp,Tr);     %errorscore
 delta_out=zeros(nResp,Tr);      %delta hidden to output layer
 delta_M1=zeros(nM1,Tr);         %delta input to hidden layer M1
 delta_M2=zeros(nM2,Tr);         %delta input to hidden layer M2
 delta_M3=zeros(nM2,Tr);         %delta input to hidden layer M2
+
 %% Input
 In=repmat(1:nInput,6,(POT(1)));      %make input list of patterns
 %randomization for each part seperately
@@ -261,7 +269,7 @@ sync_IM3=zeros(nStim,nM2,Tr);    %sync matrix (correlations)
 Hit=zeros(T,Tr);                 %Hit record
 
 %% the model
-    %trial loop 
+
     for trial=1:Tr  
         
         %oscillatory starting points are end points of previous trials
@@ -277,7 +285,7 @@ Hit=zeros(T,Tr);                 %Hit record
         %Assigning input pattern
         Z(:,trial)=Activation(:,Input(1,trial));
         
-                % intertrial interval
+        % intertrial interval
         for t= 1:ITI
             
             %computing radius of oscillations
@@ -286,7 +294,7 @@ Hit=zeros(T,Tr);                 %Hit record
             r2_M2(:,t,trial)=squeeze(dot(Phase_M2(:,:,t,trial),Phase_M2(:,:,t,trial),2));              %Hidden layer M1
             r2_M3(:,t,trial)=squeeze(dot(Phase_M3(:,:,t,trial),Phase_M3(:,:,t,trial),2));
             r2_Out(:,t,trial)=squeeze(dot(Phase_Out(:,:,t,trial),Phase_Out(:,:,t,trial),2));           %Output layer
-            r2_ACC(t,trial)=dot(ACC(:,t,trial),ACC(:,t,trial));                                        %ACC
+            r2_ACC(t,trial)=dot(ACC(:,t,trial),ACC(:,t,trial));                                        %pMFC
             
             %updating phase code neurons
             Phase_Input(:,1,t+1,trial)=Phase_Input(:,1,t,trial)-Cg*Phase_Input(:,2,t,trial)-damp*(r2_Input(:,t,trial)>r2max).*Phase_Input(:,1,t,trial); % excitatory cells
@@ -304,8 +312,8 @@ Hit=zeros(T,Tr);                 %Hit record
             Phase_Out(:,1,t+1,trial)=Phase_Out(:,1,t,trial)-Cg*Phase_Out(:,2,t,trial)-damp*(r2_Out(:,t,trial)>r2max).*Phase_Out(:,1,t,trial); % excitatory cells
             Phase_Out(:,2,t+1,trial)=Phase_Out(:,2,t,trial)+Cg*Phase_Out(:,1,t,trial)-damp*(r2_Out(:,t,trial)>r2max).*Phase_Out(:,2,t,trial); % inhibitory cells
 
-            ACC(1,t+1,trial)=ACC(1,t,trial)-Ct*ACC(2,t,trial)-damp_acc*(r2_ACC(t,trial)>r2_acc)*ACC(1,t,trial); % ACC exc cell
-            ACC(2,t+1,trial)=ACC(2,t,trial)+Ct*ACC(1,t,trial)-damp_acc*(r2_ACC(t,trial)>r2_acc)*ACC(2,t,trial); % ACC inh cell
+            ACC(1,t+1,trial)=ACC(1,t,trial)-Ct*ACC(2,t,trial)-damp_acc*(r2_ACC(t,trial)>r2_acc)*ACC(1,t,trial); % pMFC exc cell
+            ACC(2,t+1,trial)=ACC(2,t,trial)+Ct*ACC(1,t,trial)-damp_acc*(r2_ACC(t,trial)>r2_acc)*ACC(2,t,trial); % pMFC inh cell
             
             if trial>1
                 if negPE(1,trial-1)>0 
@@ -318,7 +326,7 @@ Hit=zeros(T,Tr);                 %Hit record
                 end;
             end;
 
-            %bernoulli process in ACC rate
+            %bernoulli process in pMFC rate
             Be(t,trial)=1/(1+exp(-acc_slope*(ACC(1,t,trial)-1)));
             prob=rand;
             
@@ -342,7 +350,7 @@ Hit=zeros(T,Tr);                 %Hit record
             r2_M2(:,time,trial)=squeeze(dot(Phase_M2(:,:,time,trial),Phase_M2(:,:,time,trial),2));              %Hidden layer M1
             r2_M3(:,time,trial)=squeeze(dot(Phase_M3(:,:,time,trial),Phase_M3(:,:,time,trial),2));              %Hidden layer M1
             r2_Out(:,time,trial)=squeeze(dot(Phase_Out(:,:,time,trial),Phase_Out(:,:,time,trial),2));           %Output layer
-            r2_ACC(time,trial)=dot(ACC(:,time,trial),ACC(:,time,trial));                                        %ACC
+            r2_ACC(time,trial)=dot(ACC(:,time,trial),ACC(:,time,trial));                                        %pMFC
             
             %updating phase code neurons
             Phase_Input(:,1,time+1,trial)=Phase_Input(:,1,time,trial)-Cg*Phase_Input(:,2,time,trial)-damp*(r2_Input(:,time,trial)>r2max).*Phase_Input(:,1,time,trial); % excitatory cells
@@ -360,10 +368,10 @@ Hit=zeros(T,Tr);                 %Hit record
             Phase_Out(:,1,time+1,trial)=Phase_Out(:,1,time,trial)-Cg*Phase_Out(:,2,time,trial)-damp*(r2_Out(:,time,trial)>r2max).*Phase_Out(:,1,time,trial); % excitatory cells
             Phase_Out(:,2,time+1,trial)=Phase_Out(:,2,time,trial)+Cg*Phase_Out(:,1,time,trial)-damp*(r2_Out(:,time,trial)>r2max).*Phase_Out(:,2,time,trial); % inhibitory cells
 
-            ACC(1,time+1,trial)=ACC(1,time,trial)-Ct*ACC(2,time,trial)-damp_acc*(r2_ACC(time,trial)>r2_acc)*ACC(1,time,trial); % ACC exc cell
-            ACC(2,time+1,trial)=ACC(2,time,trial)+Ct*ACC(1,time,trial)-damp_acc*(r2_ACC(time,trial)>r2_acc)*ACC(2,time,trial); % ACC inh cell
+            ACC(1,time+1,trial)=ACC(1,time,trial)-Ct*ACC(2,time,trial)-damp_acc*(r2_ACC(time,trial)>r2_acc)*ACC(1,time,trial); % pMFC exc cell
+            ACC(2,time+1,trial)=ACC(2,time,trial)+Ct*ACC(1,time,trial)-damp_acc*(r2_ACC(time,trial)>r2_acc)*ACC(2,time,trial); % pMFC inh cell
             
-            %bernoulli process in ACC rate
+            %bernoulli process in pMFC rate
             Be(time,trial)=1/(1+exp(-acc_slope*(ACC(1,time,trial)-1)));
             prob=rand;
             
@@ -406,7 +414,7 @@ Hit=zeros(T,Tr);                 %Hit record
             response(3,trial)= 1;    
         end;
         
-        %Critic processes
+        %RL unit processes
         %reward value/ accuracy determination
         if squeeze(response(:,trial))==squeeze(Objective(:,Input(1,trial),trial))
             rew(1,trial)=1;
@@ -414,7 +422,7 @@ Hit=zeros(T,Tr);                 %Hit record
             rew(1,trial)=0;
         end;
         
-        %value unit update
+        %value neuron update
         V(1,trial)=E(:,trial)'* 0.5* (LFC(2:end,trial)+ones(nmod,1)); 
         
         %Prediction errors
@@ -424,7 +432,7 @@ Hit=zeros(T,Tr);                 %Hit record
         %Value weight update
         E(:,trial+1)= E(:,trial) + lp * V(1,trial) * (posPE(1,trial)-negPE(1,trial)) * 0.5 * (LFC(2:end,trial)+ones(nmod,1));
         
-        %switch unit update
+        %switch neuron update
         S(1,trial+1)=0.8*S(1,trial)+0.2*(negPE(1,trial));
         
         %LFC update
@@ -504,21 +512,8 @@ Hit=zeros(T,Tr);                 %Hit record
         end;
         prog=trial
     end;
- 
- %%basic analyses
- %nbins=20;
- %binned_Errorscore=zeros(1,nbins*3);
- %binned_accuracy=zeros(1,nbins*3);
- %bin_edges=zeros(1,(nbins*3)+1);
- 
- %bin_edges(1,1:nbins+1)=0:POT_1/nbins:POT_1;
- %bin_edges(1,nbins+1:(nbins*2)+1)=POT_1:POT_1/nbins:POT_2;
- %bin_edges(1,(2*nbins)+1:(nbins*3)+1)=POT_2:POT_1/nbins:Tr; 
-  
- %for bin=1:nbins*3
- %    binned_Errorscore(1,bin)=mean(mean(Errorscore(:,(bin_edges(bin)+1):bin_edges(bin+1))));
- %    binned_accuracy(1,bin)=mean(rew(1,(bin_edges(bin)+1):bin_edges(bin+1)));
- %end;
- %save(['backprop_sync_Beta',num2str(b),'Rep',num2str(r)]);
+
+%% save
+save(['backprop_sync_Beta',num2str(b),'Rep',num2str(r)],'Errorscore','sync_IM1','sync_IM2','sync_IM3','S','LFC','Phase_Input','Phase_M1','Phase_M2','Phase_M3','Phase_Out','ACC','rew');
     end;
 end;

@@ -1,4 +1,6 @@
-
+%{
+    Script for the synaptic backpropagation model
+%}
 %% Defining amount of loops
 Rep=10;                 %amount of replications
 Tr=2400;                %amount of trials

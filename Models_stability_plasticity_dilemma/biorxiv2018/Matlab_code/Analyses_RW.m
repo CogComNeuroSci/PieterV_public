@@ -1,3 +1,7 @@
+%{
+    Script for analyses of RW model
+}
+
 %% define variables
 
 betas=11;
@@ -92,7 +96,7 @@ mean_stab_conn=mean(stability_conn,2)*100;
 std_stab_conn=std(stability_conn,0,2);
 CI_stab_conn=2*std_stab_conn./sqrt(Rep)*100;
 
-%% empirical stuff
+%% synchronization
 %compute means     
 sync_rule1=zeros(2,2,Tr,betas,Rep);
 sync_rule2=zeros(2,2,Tr,betas,Rep);
@@ -146,9 +150,10 @@ CI_weights_rule1_conn=squeeze((CI_weights_conn(1,3,:,:)+CI_weights_conn(2,4,:,:)
 CI_weights_rule2_conn=squeeze((CI_weights_conn(2,3,:,:)+CI_weights_conn(1,4,:,:))./2);
 
 %extract gamma-amplitude
-relevant_Gamma=zeros(500,Tr,betas,Rep); %time,trial,rep
+relevant_Gamma=zeros(500,Tr,betas,Rep);
 %extract theta-phase
 Theta_Phase=zeros(500,Tr,betas,Rep);
+
 %actual pac measure (dpac(Van driel et al., 2015))
 dpac=zeros(Tr,betas,Rep);
 
@@ -167,7 +172,7 @@ mean_pac=squeeze(mean(dpac,3));
 std_pac=std(dpac,0,3);
 CI_pac=2*(std_pac./sqrt(Rep));
 
-%% ERN
+%% Time-frequency and ERP
 srate=500;
 frex    = linspace(1,10,10);
 wavtime = -2:1/srate:2-1/srate;

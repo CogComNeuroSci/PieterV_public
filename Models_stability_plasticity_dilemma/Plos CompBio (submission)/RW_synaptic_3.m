@@ -1,19 +1,23 @@
+%{
+    Script for running the synaptic RW model
+%}
+
 %% Defining amount of loops
 Rep=10;                     % amount of replications
-Tr=360;                      % amount of trials
+Tr=360;                     % amount of trials
 betas=11;                   % beta iterations
 Beta=0:1/(betas-1):1;       %learning rate values
 
 POT=Tr/6:Tr/6:Tr;                 %point of switch to task rule 2 (trial 20)
 part1=1:POT(1);                   %first part
 part2=POT(1)+1:POT(2);            %second part
-part3=POT(2)+1:POT(3);                %third part
+part3=POT(2)+1:POT(3);            %third part
 part4=POT(3)+1:POT(4);
 part5=POT(4)+1:POT(5);
 part6=POT(5)+1:POT(6);
 
 %% other variables
-nUnits=6;                   %model units
+nUnits=6;                   %model nodes
 
 %Input patterns
 Activation=zeros(nUnits,3);
@@ -34,15 +38,15 @@ objective(2,4,[part3,part6])=1;
 objective(3,5,[part3,part6])=1;
 
 %% simulation loops
-for b=6:6%1:betas                     %gradual change of beta 
-    for r=1:1%1:Rep             %replication loop
-%% model build-up
-%processing layer
-Rate=zeros(nUnits,Tr);    %rate neurons (matrix definieren)
+for b=1:betas
+    for r=1:Rep             %replication loop
+
+%%Processing unit
+Rate=zeros(nUnits,Tr);    %rate neurons
 
 %weights
-W=zeros(nUnits,nUnits,Tr);  %matrix met gewichten definieren
-W(1:3,4:6,1)=rand(3,3);       %initial weigth strengths (in het begin zijn alle stimuli (rij 1 en 2) gelijk verbonden met alle responsen (kolom 3 en 4)
+W=zeros(nUnits,nUnits,Tr);
+W(1:3,4:6,1)=rand(3,3);       %initial weigth strengths
 
 %% Input
 %randomization of input patterns
@@ -96,6 +100,6 @@ rew=zeros(1,Tr);                %reward or accuracy
         end;
     prog=trial
     end;
-    save(['Beta',num2str(b),'Rep',num2str(r),'_RWonly']); %write data to file with beta iteration, epsilon iteration and replication as name
+    save(['Beta',num2str(b),'Rep',num2str(r),'_RWonly']); %write data to file with beta iteration and replication as name
     end; 
 end;

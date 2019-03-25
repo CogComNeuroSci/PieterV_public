@@ -1,7 +1,13 @@
+%{
+    Script for the analyses of the BP model on the three-dimensional task
+%}
 
+%% Define variables
 Rep=10;
 betas=11;
 Tr=3600;
+
+%Initialize all data matrices
 
 Accuracy_conn=zeros(Tr,betas,Rep);
 ERR_conn=zeros(Tr,betas,Rep);
@@ -18,6 +24,8 @@ module=zeros(2,betas,Rep);
 Switcher=zeros(Tr+1,betas,Rep);
 
 gam_wav=zeros(34,500,Tr);
+
+%% load data and store in data matrices
 
 for b=1:betas
     for r=1:Rep
@@ -61,6 +69,9 @@ for b=1:betas
     end;
 end;
 
+%% General performance of the synaptic model
+
+%compute binned accuracy: divide 3600 trials in 120 bins
 binned_accuracy_conn=zeros(120,betas,Rep);
 binned_errorscore_conn=zeros(120,betas,Rep);
 bin_edges=(1:Tr/120:Tr+1)-1;
@@ -69,6 +80,7 @@ for i =1:length(bin_edges)-1
     binned_errorscore_conn(i,:,:)=mean(ERR_conn(bin_edges(i)+1:bin_edges(i+1),:,:),1);
 end;
 
+%compute means and confidence intervals (accuracy and errorscore)
 mean_ACC_conn=squeeze(mean(Accuracy_conn,3));
 mean_ERR_conn=squeeze(mean(ERR_conn,3));
 CI_ACC_conn=squeeze(2*std(Accuracy_conn,0,3)./sqrt(Rep));
@@ -76,6 +88,9 @@ CI_ERR_conn=squeeze(2*std(ERR_conn,0,3)./sqrt(Rep));
 overall_ACC_conn=mean(mean_ACC_conn,1);
 CI_all_acc_conn=(2*squeeze(std(mean(Accuracy_conn,1),0,3))./sqrt(Rep));
 
+%% General performance of the full model
+
+%compute binned accuracy: divide 3600 trials in 120 bins
 binned_accuracy_sync=zeros(120,betas,Rep);
 binned_errorscore_sync=zeros(120,betas,Rep);
 for i =1:length(bin_edges)-1
@@ -83,6 +98,7 @@ for i =1:length(bin_edges)-1
     binned_errorscore_sync(i,:,:)=mean(ERR_sync(bin_edges(i)+1:bin_edges(i+1),:,:),1);
 end;
 
+%compute means and confidence intervals (accuracy and errorscore)
 mean_ACC_sync=squeeze(mean(Accuracy_sync,3));
 mean_ERR_sync=squeeze(mean(ERR_sync,3));
 CI_ACC_sync=squeeze(2*std(Accuracy_sync,0,3)./sqrt(Rep));
@@ -90,7 +106,9 @@ CI_ERR_sync=squeeze(2*std(ERR_sync,0,3)./sqrt(Rep));
 overall_ACC_sync=mean(mean_ACC_sync,1);
 CI_all_acc_sync=(2*squeeze(std(mean(Accuracy_sync,1),0,3))./sqrt(Rep));
 
-%determine critical moments
+%% Compute stability and plasticity for both models
+
+%determine critical moments to compute stability and plasticity values (in trial bins)
 stability_R1_1=15:20;
 stability_R1_2=61:65;
 stability_R2_1=35:40;
@@ -101,7 +119,7 @@ plasticity_1=1:5;
 plasticity_2=21:25;
 plasticity_3=41:60;
 
-%Compute stability and plasticity for both models
+% The synaptic model
 Stability_conn(1,:,:)=mean(binned_accuracy_conn(stability_R1_2,:,:),1)-mean(binned_accuracy_conn(stability_R1_1,:,:),1);
 Stability_conn(2,:,:)=mean(binned_accuracy_conn(stability_R2_2,:,:),1)-mean(binned_accuracy_conn(stability_R2_1,:,:),1);
 Stability_conn(3,:,:)=mean(binned_accuracy_conn(stability_R3_2,:,:),1)-mean(binned_accuracy_conn(stability_R3_1,:,:),1);
@@ -110,6 +128,7 @@ Plasticity_conn(1,:,:)=mean(binned_accuracy_conn(plasticity_1,:,:),1);
 Plasticity_conn(2,:,:)=mean(binned_accuracy_conn(plasticity_2,:,:),1);
 Plasticity_conn(3,:,:)=mean(binned_accuracy_conn(plasticity_3,:,:),1);
 
+% The full model
 Stability_sync(1,:,:)=mean(binned_accuracy_sync(stability_R1_2,:,:),1)-mean(binned_accuracy_sync(stability_R1_1,:,:),1);
 Stability_sync(2,:,:)=mean(binned_accuracy_sync(stability_R2_2,:,:),1)-mean(binned_accuracy_sync(stability_R2_1,:,:),1);
 Stability_sync(3,:,:)=mean(binned_accuracy_sync(stability_R3_2,:,:),1)-mean(binned_accuracy_sync(stability_R3_1,:,:),1);
@@ -143,12 +162,14 @@ Stab_conn_for_paper(1,:)=mean(mean_stab_conn,1);
 Stab_conn_for_paper(2,:)=mean(CI_stab_conn,1);
 
 
-%% empirical stuff
-%compute means     
+%% Synchronization of task modules
+
+%compute means
 sync_rule1=zeros(13,6,Tr,betas,Rep);
 sync_rule2=zeros(13,6,Tr,betas,Rep);
 sync_rule3=zeros(13,6,Tr,betas,Rep);
 
+% check according to the chosen module for every task rule
 for b=1:betas
     for r=1:Rep
         if module(1,b,r)==1
@@ -182,7 +203,7 @@ for b=1:betas
     end;
 end;
 
-%% begin
+% average and confidence intervals
 sync_rule1=squeeze(mean(mean(sync_rule1,1),2));
 sync_rule2=squeeze(mean(mean(sync_rule2,1),2));
 sync_rule3=squeeze(mean(mean(sync_rule3,1),2));
@@ -191,19 +212,19 @@ mean_sync_rule1=squeeze(mean(sync_rule1,3));
 mean_sync_rule2=squeeze(mean(sync_rule2,3));
 mean_sync_rule3=squeeze(mean(sync_rule3,3));
 
-%compute standard deviations
 std_sync_rule1=std(sync_rule1,0,3);
 std_sync_rule2=std(sync_rule2,0,3);
 std_sync_rule3=std(sync_rule3,0,3);
 
-%compute 95% confidence interval
 CI_sync_rule1=2*(std_sync_rule1./sqrt(Rep));
 CI_sync_rule2=2*(std_sync_rule2./sqrt(Rep));
 CI_sync_rule3=2*(std_sync_rule3./sqrt(Rep));
 
-%% begin
+%% Phase amplitude coupling
+
 %extract theta-phase
 Theta_Phase=zeros(500,Tr,betas,Rep);
+
 %actual pac measure (dpac(Van driel et al., 2015))
 dpac=zeros(Tr,betas,Rep);
 
@@ -216,18 +237,12 @@ for b=1:betas
     end;
 end;
 
-%% begin
 % compute mean, std and 95% CI
 mean_pac=squeeze(mean(dpac,3));
 std_pac=std(dpac,0,3);
 CI_pac=2*(std_pac./sqrt(Rep));
 
-%relation between synchronization and RT
-relevant_sync(1:600,:,:)=squeeze(sync_rule1(1:600,:,:));
-relevant_sync(601:1200,:,:)=squeeze(sync_rule2(601:1200,:,:));
-relevant_sync(1201:1800,:,:)=squeeze(sync_rule1(1201:1800,:,:));
-
-%% ERN
+%% Time-frequency decomposition: we divide in error and correct trials
 srate=500;
 frex    = linspace(1,10,10);
 wavtime = -2:1/srate:2-1/srate;
@@ -248,7 +263,6 @@ for fi=1:10
     cmwX(fi,:) = cmwX(fi,:) ./ max(cmwX(fi,:));
 end
 
-%%
 ERN_dat=zeros(750,Tr*betas*Rep);
 corr_dat=zeros(750,Tr*betas*Rep);
 ERN_sim=zeros(750,betas,Rep);
@@ -256,7 +270,8 @@ ERN_sim=zeros(750,betas,Rep);
 prev_err=1;
 err=0;
 corr=0;
-%%
+
+
 for b=1:betas
     for r=1:Rep
         bet_err=0;
@@ -275,7 +290,6 @@ for b=1:betas
     end;
 end;
 
-%%
 ERN_dat=ERN_dat(:,1:err);
 corr_dat=corr_dat(:,1:corr);
 ERN_all=mean(ERN_dat,2);
@@ -330,9 +344,10 @@ for i=1:size(corr_dat,2)
     end % end frequency loop
 end;
 
-
-freq_corr=squeeze((mean(tf_dat_corr,1)* round(size(corr_dat,2)/2) + mean(tf_dat_corr,1)* size(corr_dat,2) - round(size(corr_dat,2)/2))./size(corr_dat,2));
+% Power for error trials, correct trials and the contrast between them
+freq_corr=squeeze((mean(tf_dat_corr,1)* round(size(corr_dat,2)/2) + mean(tf_dat_corr2,1)* (size(corr_dat,2) - round(size(corr_dat,2)/2))./size(corr_dat,2));
 freq_err=squeeze(mean(tf_dat_err(:,:,:,1),1));
 freq_diff=freq_err-freq_corr;
-%%
+                  
+%% save
 save('backprop_data_','CI_ACC_conn','CI_ACC_sync','CI_all_acc_conn','CI_all_acc_sync','CI_pac','CI_plas_conn','CI_plas_sync','CI_stab_conn','CI_stab_sync','CI_sync_rule1','CI_sync_rule2','CI_sync_rule3','ERN_all','ERN_sim','freq_corr','freq_err','freq_diff','mean_ACC_conn','mean_ACC_sync','mean_pac','mean_plas_conn','mean_plas_sync','mean_stab_conn','mean_stab_sync','mean_sync_rule1','mean_sync_rule2','mean_sync_rule3','overall_ACC_conn','overall_ACC_sync','Switcher','binned_accuracy_sync', 'binned_accuracy_conn')

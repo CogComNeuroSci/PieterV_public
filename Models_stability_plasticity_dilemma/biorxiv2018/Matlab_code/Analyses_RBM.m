@@ -1,3 +1,8 @@
+%{
+        Script for analyses of RBM model
+%}
+
+%% define variables and data storage matrix
 Rep=10;
 betas=11;
 bins=60;
@@ -12,9 +17,10 @@ synchronization_IM2=zeros(6,4,2400,betas,Rep);
 module=zeros(betas,Rep);
 Switcher=zeros(2401,betas,Rep);
 
+%% load data and assign to data matrices
 for b=1:betas
 for rep=1:Rep
-    
+
     load(['RBM_nosync_Beta',num2str(b),'Rep',num2str(rep)],'binned_accuracy_min','binned_Errorscore_min')
     ACC_conn(:,b,rep)=squeeze(binned_accuracy_min)*100;
     ERR_conn(:,b,rep)=squeeze(binned_Errorscore_min);
@@ -34,6 +40,7 @@ for rep=1:Rep
 end;
 end;
 
+%compute average and confidence intervals
 mean_ACC_conn=mean(ACC_conn,3);
 mean_ERR_conn=mean(ERR_conn,3);
 CI_ACC_conn=2*std(ACC_conn,0,3)./sqrt(rep);
@@ -48,13 +55,14 @@ CI_ERR_sync=2*std(ERR_sync,0,3)./sqrt(rep);
 overall_ACC_sync=mean(mean_ACC_sync,1);
 CI_all_acc_sync=(2*squeeze(std(mean(ACC_sync,1),0,3))./sqrt(Rep));
 
+%% stability-plasticity measures
 %determine critical moments
-start=1:5;          %first 5 trials
-end_one=15:19;      %last 5 trials before switch 1
-Change_one=21:25;   %first 5 trials after switch 1
-end_two=35:39;      %last 5 trials before switch 2
-Change_two=41:45;   %first 5 trials after switch 2
-final=56:60;        %last 5 trials
+start=1:5;          %first 5 trial bins
+end_one=15:19;      %last 5 trial bins before switch 1
+Change_one=21:25;   %first 5 trial bins after switch 1
+end_two=35:39;      %last 5 trial bins before switch 2
+Change_two=41:45;   %first 5 trial bins after switch 2
+final=56:60;        %last 5 trial bins
 
 %compute mean accuracy for these moments
 A=squeeze(mean(ACC_conn(end_one,:,:),1));
