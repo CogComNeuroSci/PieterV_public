@@ -1,0 +1,19 @@
+Files for paper on Neural synchrony for adaptive control
+
+Model.m file contains Matlab code to simulate the model. 
+All three models can be simulated by changing parameter values.
+Current parameter settings simulate the spatiotemporal adaptive model
+Also the supplementary simulations of control on different timescales can be performed with slight adaptations to this script
+
+Pre_analyses.m combines relevant data of several simulations into one datafile that can be analyzed in R
+
+Analyses.R analyzes the data of all three models described in the paper and makes plots
+
+Parameter explorations are performed with files
+Control_par_explore.m and Accumulator_par_explore.m
+
+and analyzed by files
+analyses_accumulator_explore.R and Analyses_control_explore.R
+
+the Analyses_timescales.R file provides a script to analyze data from supplementary simulations on different timescales for control.
+
