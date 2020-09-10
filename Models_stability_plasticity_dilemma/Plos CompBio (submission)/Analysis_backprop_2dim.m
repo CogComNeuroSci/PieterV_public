@@ -5,27 +5,27 @@
 %% Define variables
 
 % Amounts of everything
-Rep=10;
-betas=11;
-Tr=3600;
+Rep=10;             %simulations
+betas=11;           %learning rates
+Tr=3600;            %trials
 
 %Initialize all data matrices
-
+%Classic (synaptic) model
 Accuracy_conn=zeros(Tr,betas,Rep);
 ERR_conn=zeros(Tr,betas,Rep);
-
+%Sync model
 Accuracy_sync=zeros(Tr,betas,Rep);
 reward=zeros(Tr,betas,Rep);
 ERR_sync=zeros(Tr,betas,Rep);
-relevant_Gamma=zeros(500,Tr,betas,Rep);        %gamma waves for pac measure (4000 is just approximation of timesteps until response)
-Theta= zeros(2,500,Tr,betas,Rep);          %theta waves for pac measure
+relevant_Gamma=zeros(500,Tr,betas,Rep);                         %gamma waves for pac measure (500 time steps)
+Theta= zeros(2,500,Tr,betas,Rep);                               %theta waves for pac measure
 synchronization_IM1=zeros(9,6,Tr,betas,Rep);
 synchronization_IM2=zeros(9,6,Tr,betas,Rep);
 synchronization_IM3=zeros(9,6,Tr,betas,Rep);
 module=zeros(2,betas,Rep);
 Switcher=zeros(Tr+1,betas,Rep);
 
-gam_wav=zeros(30,500,Tr);
+gam_wav=zeros(30,500,Tr);                                       %to combine all gamma-wave data of different modules in Processing unit
 
 %% load data and store in data matrices
 
@@ -264,6 +264,7 @@ for fi=1:10
     cmwX(fi,:) = cmwX(fi,:) ./ max(cmwX(fi,:));
 end
 
+%if you want to see whether model produces an ERN component (it does!)
 ERN_dat=zeros(750,Tr*betas*Rep);
 corr_dat=zeros(750,Tr*betas*Rep);
 ERN_sim=zeros(750,betas,Rep);
@@ -276,15 +277,18 @@ for b=1:betas
     for r=1:Rep
         bet_err=0;
         for tr=2:Tr
+            %correct trials
             if reward(tr-1,b,r)==1
                 corr=corr+1;
                 corr_dat(:,corr)=[Theta(1,251:500,tr-1,b,r) Theta(1,1:500,tr,b,r)];  
+            %error trials
             else
                 err=err+1;
                 bet_err=bet_err+1;
                 ERN_dat(:,err)=[Theta(1,251:500,tr-1,b,r) Theta(1,1:500,tr,b,r)]; 
             end;
         end;
+        %average for this simulation
         ERN_sim(:,b,r)=squeeze(mean(ERN_dat(:,prev_err:prev_err+bet_err-1),2));
         prev_err=prev_err+bet_err;
     end;
@@ -294,6 +298,8 @@ ERN_dat=ERN_dat(:,1:err);
 corr_dat=corr_dat(:,1:corr);
 ERN_all=mean(ERN_dat,2);
 
+%time-frequency decomposition for error trials
+%split up trials in 2 matrices because of matrix size
 tf_dat_err=zeros(round(size(ERN_dat,2)/2),10,750-1);
 tf_dat_err2=zeros(size(ERN_dat,2)-round(size(ERN_dat,2)/2),10,750-1);
 
@@ -308,7 +314,7 @@ for i=1:size(ERN_dat,2)
         % cut wavelet back to size of data
         as = as(round(halfwav)+1:end-round(halfwav));
         
-       % extract power and phase
+       % extract power
         if i<round(size(ERN_dat,2)/2)+1
             tf_dat_err(i,fi,:) = abs(as).^2;
         else
@@ -318,6 +324,8 @@ for i=1:size(ERN_dat,2)
     end % end frequency loop
 end;
 
+%time-frequency decomposition for error trials
+%split up trials in 2 matrices because of matrix size
 tf_dat_corr=zeros(round(size(corr_dat,2)/2),10,750-1);
 tf_dat_corr2=zeros(size(corr_dat,2)-round(size(corr_dat,2)/2),10,750-1);
 
@@ -345,7 +353,7 @@ for i=1:size(corr_dat,2)
     end % end frequency loop
 end;
 
-% Power for error trials, correct trials and the contrast between them
+% Power for error trials, correct trials and the contrast between them (accounting for split and possibly unbalanced number of trials)
 freq_corr=squeeze((mean(tf_dat_corr,1)* round(size(corr_dat,2)/2) + mean(tf_dat_corr2,1)* (size(corr_dat,2) - round(size(corr_dat,2)/2)))./size(corr_dat,2));
 freq_err=squeeze((mean(tf_dat_err,1)* round(size(ERN_dat,2)/2) + mean(tf_dat_err2,1)* (size(ERN_dat,2) - round(size(ERN_dat,2)/2)))./size(ERN_dat,2));
 freq_diff=freq_err-freq_corr;
