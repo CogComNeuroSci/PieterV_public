@@ -2,36 +2,36 @@
     Script for main text parameter exploration 
 %}
 %% Defining amount of loops
-T=500;                  %trialtime
-Tr=360;                 % amount of trials
-betas=1;               %beta iterations
-Beta=0.2;%0:1/(betas-1):1;   %learning rate values
-ITI=250;                %intertrial interval
+T=500;                          %trialtime
+Tr=360;                         %amount of trials
+betas=1;                        %learning rate iterations
+Beta=0.2;                       %learning rate values
+ITI=250;                        %intertrial interval
 
 POT=Tr/6:Tr/6:Tr;                 %point of switch to task rule 2 (trial 20)
 part1=1:POT(1);                   %first part
 part2=POT(1)+1:POT(2);            %second part
-part3=POT(2)+1:POT(3);                %third part
-part4=POT(3)+1:POT(4);
+part3=POT(2)+1:POT(3);            %third part
+part4=POT(3)+1:POT(4);            %...
 part5=POT(4)+1:POT(5);
 part6=POT(5)+1:POT(6);
 
 %% model build-up
 % Processing module
-nUnits=12;                   %model units
-r2max=1;                    %max amplitude
-Cg=0.15:0.1:0.65;                    %coupling gamma waves (sampling frequency =500)
-damp=0.3;                   %damping parameter
-decay=0.9;                  %decay parameter
+nUnits=12;                        %model units
+r2max=1;                          %max amplitude
+Cg=0.15:0.1:0.65;                 %coupling gamma waves (sampling frequency =500)
+damp=0.3;                         %damping parameter
+decay=0.9;                        %decay parameter
 
 %Control module
-r2_acc=[0,0.05,0.5,1];       %radius ACC
-Ct=0.03:0.02:0.15;        %coupling theta waves
-damp_acc=[0,0.003, 0.03, 0.3];  %damping parameter ACC
-acc_slope=10;   %acc_slope
+r2_acc=[0,0.05,0.5,1];            %radius ACC
+Ct=0.03:0.02:0.15;                %coupling theta waves
+damp_acc=[0,0.003, 0.03, 0.3];    %damping parameter ACC
+acc_slope=10;                     %acc_slope
 
 %Critic
-lp=0.1;                 %learning rate critic
+lp=0.1;                           %learning rate RL unit
 %% other variables
 %Input patterns
 Activation=zeros(nUnits,3);
@@ -56,15 +56,16 @@ objective(1,R3_units,[part3,part6])=1;
 objective(2,R1_units,[part3,part6])=1;
 objective(3,R2_units,[part3,part6])=1;
 
+%accuracy matrix
 accuracy=zeros(5,length(r2_acc),length(damp_acc),length(Ct),length(Cg),Tr);
 b=1;
 
 %% simulation loops
-for Rep=1:5
-    for r=1:length(r2_acc)
-        for d=1:length(damp_acc)
-            for cp= 1:length(Cg) %b=6:6%betas
-                for cc=1:length(Ct) %r=1:1%1:10%Rep            %replication loop
+for Rep=1:5                                                   %replications
+    for r=1:length(r2_acc)                                    %4 radius values
+        for d=1:length(damp_acc)                              %4 damping values
+            for cp= 1:length(Cg)                              %Gamma frequencies (coupling values)
+                for cc=1:length(Ct) %r=1:1%1:10%Rep           %Theta frequencies (coupling values)
 %% model initialization
 %Processing module
 Phase=zeros(nUnits,2,T,Tr); %phase neurons
@@ -83,13 +84,13 @@ LFC(1,1)=1;
 LFC(stm+1,1)=1;
 Inhibition=zeros(length(Modules),Tr);
 
-ACC=zeros(2,T,Tr);      %ACC phase units
-Be=zeros(T,Tr);         %bernoulli (rate code ACC)
+ACC=zeros(2,T,Tr);      %pMFC phase units
+Be=zeros(T,Tr);         %bernoulli (rate code pMFC)
 
 %Critic
 rew=zeros(1,Tr);        %reward
 V=zeros(1,Tr);          %value unit
-E=zeros(3,Tr);          %value weights with Integrator
+E=zeros(3,Tr);          %value weights with LFC
 E(:,1)=0.5;             %initial values
 negPE=zeros(1,Tr);      %negative prediction error
 posPE=zeros(1,Tr);      %positive prediction error
@@ -108,16 +109,16 @@ Input(1,part6)=In(3,randperm(POT(1)));
 %% Other
 %starting points of oscillations
 start=randn(nUnits,2,1,1);      %draw random starting points
-start_ACC=randn(2,1,1);         %acc oscillations starting points
+start_ACC=randn(2,1,1);         %pMFC oscillations starting points
 Phase(:,:,1,1)=start(:,:,1,1);  %assign to phase code units
-ACC(:,1,1)=start_ACC;
+ACC(:,1,1)=start_ACC;           %ACC = pMFC!!
 r2=zeros(nUnits+1,T,Tr);        %radius
 
 %recordings
 Z=zeros(nUnits,Tr);             %input matrix
 response=zeros(3,Tr);           %response record
 sync=zeros(nUnits,nUnits,Tr);   %sync matrix (correlations)
-Hit=zeros(T,Tr);                %Hit record
+Hit=zeros(T,Tr);                %Hit/Burst record
 %% the model
 
     for trial=1:Tr          %trial loop
@@ -136,11 +137,12 @@ Hit=zeros(T,Tr);                %Hit record
             Phase(:,1,t+1,trial)=Phase(:,1,t,trial)-Cg(cp)*Phase(:,2,t,trial)-damp*(r2(1:nUnits,t,trial)>r2max).*Phase(:,1,t,trial); % excitatory cells
             Phase(:,2,t+1,trial)=Phase(:,2,t,trial)+Cg(cp)*Phase(:,1,t,trial)-damp*(r2(1:nUnits,t,trial)>r2max).*Phase(:,2,t,trial); % inhibitory cells
        
-            %updating phase code units in ACC
+            %updating phase code units in pMFC
             r2(nUnits+1,t,trial)=squeeze(dot(ACC(:,t,trial),ACC(:,t,trial),1));   %radius
             ACC(1,t+1,trial)=ACC(1,t,trial)-Ct(cc)*ACC(2,t,trial)-damp_acc(d)*(r2(nUnits+1,t,trial)>r2_acc(r))*ACC(1,t,trial); % ACC exc cell
             ACC(2,t+1,trial)=ACC(2,t,trial)+Ct(cc)*ACC(1,t,trial)-damp_acc(d)*(r2(nUnits+1,t,trial)>r2_acc(r))*ACC(2,t,trial); % ACC inh cell
             
+            %Burst to pMFC
             if trial>1
                 if negPE(1,trial-1)>0 
                     Be_ACC=gaussmf(t,[12.5,100]);
@@ -152,11 +154,11 @@ Hit=zeros(T,Tr);                %Hit record
                 end;
             end;
 
-            %bernoulli process in ACC rate
+            %bernoulli process in pMFC rate
             Be(t,trial)=1/(1+exp(-acc_slope*(ACC(1,t,trial)-1)));
             prob=rand;
             
-            %burst
+            %Burst to Processing unit
             if prob<Be(t,trial)
                 Hit(t,trial)=1;
                 Gaussian=randn(1,2);
@@ -180,16 +182,16 @@ Hit=zeros(T,Tr);                %Hit record
             Phase(:,1,time+1,trial)=Phase(:,1,time,trial)-Cg(cp)*Phase(:,2,time,trial)-damp*(r2(1:nUnits,time,trial)>r2max).*Phase(:,1,time,trial); % excitatory cells
             Phase(:,2,time+1,trial)=Phase(:,2,time,trial)+Cg(cp)*Phase(:,1,time,trial)-damp*(r2(1:nUnits,time,trial)>r2max).*Phase(:,2,time,trial); % inhibitory cells
        
-            %updating phase code units in ACC
+            %updating phase code units in pMFC
             r2(nUnits+1,time,trial)=ACC(:,time,trial)'*ACC(:,time,trial);   %radius
             ACC(1,time+1,trial)=ACC(1,time,trial)-Ct(cc)*ACC(2,time,trial)-damp_acc(d)*(r2(nUnits+1,time,trial)>r2_acc(r))*ACC(1,time,trial); % ACC exc cell
             ACC(2,time+1,trial)=ACC(2,time,trial)+Ct(cc)*ACC(1,time,trial)-damp_acc(d)*(r2(nUnits+1,time,trial)>r2_acc(r))*ACC(2,time,trial); % ACC inh cell
             
-            %bernoulli process in ACC rate
+            %bernoulli process in pMFC rate
             Be(time,trial)=1/(1+exp(-acc_slope*(ACC(1,time,trial)-1)));
             prob=rand;
             
-            %burst
+            %Bursts to Processing unit
             if prob<Be(time,trial)
                 Hit(time,trial)=1;
                 Gaussian=randn(1,2);
@@ -237,6 +239,7 @@ Hit=zeros(T,Tr);                %Hit record
             Inhibition(:,trial)=Inhibition(:,trial-1)*0.9;
         end;
         
+        %If switch is needed
         if S(1,trial+1)>0.5
             
             Inhibition(stm,trial)=-2;
@@ -265,6 +268,7 @@ Hit=zeros(T,Tr);                %Hit record
             LFC(2:4,trial+1)=LFC(2:4,trial);
         end;
         
+        %Input layer has constant LFC value
         LFC(1,trial+1)=LFC(1,trial);
         
         for p=1:nUnits
@@ -282,8 +286,8 @@ Hit=zeros(T,Tr);                %Hit record
         end;
         prog=trial
     end;
+    %record accuracy
     accuracy(Rep,d,r,cc,cp,:)=rew;
-    %save(['Beta',num2str(b),'Rep',num2str(r),'_RWsync']); %write data to file with beta iteration, epsilon iteration and replication as name
                 end; 
             end;
         end;
