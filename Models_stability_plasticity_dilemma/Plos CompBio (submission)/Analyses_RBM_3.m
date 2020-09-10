@@ -5,14 +5,16 @@
 %% Define variables
 
 %Amounts of everything
-Rep=10;
-betas=11;
-bins=120;
-Tr=3600;
+Rep=10;             %simulations
+betas=11;           %learning rates
+bins=120;           %trial bins for analyses
+Tr=3600;            %trials
 
-%initialize all data matrices
-Accuracy_conn=zeros(Tr,betas,Rep);
+%Initialize all data matrices
+%For the classic (synaptic) models
+Accuracy_conn=zeros(Tr,betas,Rep); 
 ERR_conn=zeros(Tr,betas,Rep);
+%For the Sync model
 Accuracy_sync=zeros(Tr,betas,Rep);
 ERR_sync=zeros(Tr,betas,Rep);
 synchronization_IM1=zeros(12,6,Tr,betas,Rep);
