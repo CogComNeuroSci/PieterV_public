@@ -14,7 +14,7 @@ POT=Tr/6:Tr/6:Tr;                 %point of switch to task rule 2 (trial 20)
 part1=1:POT(1);                   %first part
 part2=POT(1)+1:POT(2);            %second part
 part3=POT(2)+1:POT(3);            %third part
-part4=POT(3)+1:POT(4);
+part4=POT(3)+1:POT(4);            %...
 part5=POT(4)+1:POT(5);
 part6=POT(5)+1:POT(6);
 
@@ -22,8 +22,8 @@ part6=POT(5)+1:POT(6);
 % Processing units
 nStim=12;                %number input nodes
 nM1=6;                   %number hidden nodes in module 1
-nM2=6;
-nM3=6;
+nM2=6;                   %hidden nodes in module 2
+nM3=6;                   %...
 nResp=3;                 %number of response options
 nInput=81;               %number of input patterns
 bias=5;                  %bias parameter
@@ -422,7 +422,7 @@ for trial=1:Tr
             r2_M2_min(:,time,trial,i,1)=squeeze(dot(Phase_M2_min(:,:,time,trial,i,1),Phase_M2_min(:,:,time,trial,i,1),2));              %Hidden layer M2
             r2_M3_min(:,time,trial,i,1)=squeeze(dot(Phase_M3_min(:,:,time,trial,i,1),Phase_M3_min(:,:,time,trial,i,1),2));              %Hidden layer M3
             r2_Out_min(:,time,trial,i,1)=squeeze(dot(Phase_Out_min(:,:,time,trial,i,1),Phase_Out_min(:,:,time,trial,i,1),2));           %Output layer
-            r2_ACC_min(time,trial,i,1)=dot(ACC_min(:,time,trial,i,1),ACC_min(:,time,trial,i,1));                                                %pMFC
+            r2_ACC_min(time,trial,i,1)=dot(ACC_min(:,time,trial,i,1),ACC_min(:,time,trial,i,1));                                        %pMFC
             
             %updating phase code neurons
             %Input
