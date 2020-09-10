@@ -13,16 +13,16 @@ beta=0:1/(betas-1):1;           %learning rate values
 POT=Tr/6:Tr/6:Tr;                 %point of switch to task rule 2 (trial 20)
 part1=1:POT(1);                   %first part
 part2=POT(1)+1:POT(2);            %second part
-part3=POT(2)+1:POT(3);                %third part
-part4=POT(3)+1:POT(4);
+part3=POT(2)+1:POT(3);            %third part
+part4=POT(3)+1:POT(4);            %...  
 part5=POT(4)+1:POT(5);
 part6=POT(5)+1:POT(6);
 %% basic model build-up
-nStim=12;                %number input units
-nM1=6;                  %number hidden units in module 1
-nResp=3;                %number of response options
-nInput=81;               %number of input patterns
-bias=5;                 %bias parameter
+nStim=12;                       %number input units
+nM1=6;                          %number hidden units in module 1
+nResp=3;                        %number of response options
+nInput=81;                      %number of input patterns
+bias=5;                         %bias parameter
 
 %% in- and output patterns
 Activation=zeros(nStim,nInput);      %input patterns
@@ -169,10 +169,10 @@ W_M1O(:,:,1)=rand(nM1,nResp)*2.5;
 %weight change
 delta_M1=zeros(nStim,nM1,Tr);       
 delta_M1out=zeros(nM1,nResp,Tr);   
-Errorscore=zeros(nResp,Tr);         %errorscore at negative phase
+Errorscore=zeros(nResp,Tr);                        %errorscore at negative phase
 
 %% Input to model
-In=repmat(1:nInput,6,(POT(1)));      %make input list of patterns
+In=repmat(1:nInput,6,(POT(1)));                    %make input list of patterns
 %randomization for each part seperately
 Input=zeros(1,Tr);                       
 Input(1,part1)=In(1,randperm(POT(1)));
