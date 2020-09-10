@@ -5,23 +5,23 @@
 %% Define variables
 
 % Amounts of everything
-betas=11;
-Rep=10;
-Tr=360;
-nUnits=6;
-syncUnits=12;
+betas=11;       %learning rates
+Rep=10;         %simulations
+Tr=360;         %trials
+nUnits=6;       %model nodes for classic model
+syncUnits=12;   %model nodes for Sync model
 
 %Initialize all data matrices
-
+%Classic (synaptic) model
 Accuracy_conn=zeros(Tr,betas,Rep); %accuracy variable
 Weights_conn=zeros(nUnits,nUnits,Tr+1,betas,Rep);
-
+%Sync model
 Accuracy_sync=zeros(Tr,betas,Rep); %accuracy variable
 Weights_sync=zeros(syncUnits,syncUnits,Tr+1,betas,Rep);
 
-Gamma=zeros(syncUnits,2,500,Tr,betas,Rep);        %gamma waves for pac measure (4000 is just approximation of timesteps until response)
-Theta=zeros(2,500,Tr,betas,Rep);          %theta waves for pac measure
-Synchronization=zeros(syncUnits,syncUnits,Tr,betas,Rep);   %synchronization
+Gamma=zeros(syncUnits,2,500,Tr,betas,Rep);                      %gamma waves for pac measure (500 timesteps)
+Theta=zeros(2,500,Tr,betas,Rep);                                %theta waves for pac measure
+Synchronization=zeros(syncUnits,syncUnits,Tr,betas,Rep);        %synchronization
 module=zeros(2,betas,Rep);
 Switcher=zeros(Tr+1,betas,Rep);
 
@@ -302,6 +302,7 @@ for fi=1:10
     cmwX(fi,:) = cmwX(fi,:) ./ max(cmwX(fi,:));
 end
 
+% If you want to see if model provides an ERN wave (it does!)
 ERN_dat=zeros(750,Tr*betas*Rep);
 corr_dat=zeros(750,Tr*betas*Rep);
 ERN_sim=zeros(750,betas,Rep);
@@ -313,25 +314,37 @@ for b=1:betas
     for r=1:Rep
         bet_err=0;
         for tr=2:Tr
+            %correct response
             if Accuracy_sync(tr-1,b,r)==1
                 corr=corr+1;
                 corr_dat(:,corr)=[Theta(1,251:500,tr-1,b,r) Theta(1,1:500,tr,b,r)];  
+            %error response
             else
                 err=err+1;
                 bet_err=bet_err+1;
                 ERN_dat(:,err)=[Theta(1,251:500,tr-1,b,r) Theta(1,1:500,tr,b,r)]; 
             end;
         end;
+        %average ERN for this simulation
         ERN_sim(:,b,r)=squeeze(mean(ERN_dat(:,prev_err:prev_err+bet_err-1),2));
         prev_err=prev_err+bet_err;
     end;
 end;
+
+%shrink matrix to correct length for error trials
 ERN_dat=ERN_dat(:,1:err);
+%shrink matrix to correct length for correct trials
 corr_dat=corr_dat(:,1:corr);
+
+%Average ERN over all data
 ERN_all=mean(ERN_dat,2);
+
+%Average ERN and confidence interval over simulations
 ERN_lr=squeeze(mean(ERN_sim,3));
 CI_ernlr=2*std(ERN_sim,0,3)./sqrt(Rep);
 
+%Now do time frequency analyses
+%for error trials
 tf_dat_err=zeros(size(ERN_dat,2),10,750-1,3);
 
 for i=1:size(ERN_dat,2)
@@ -353,7 +366,7 @@ for i=1:size(ERN_dat,2)
     end % end frequency loop
 end;
 
-
+%for correct trials
 tf_dat_corr=zeros(size(corr_dat,2),10,750-1,3);
 
 for i=1:size(corr_dat,2)
