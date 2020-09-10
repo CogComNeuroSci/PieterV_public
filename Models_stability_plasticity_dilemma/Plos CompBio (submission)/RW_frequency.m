@@ -28,7 +28,7 @@ decay=0.9;                        %decay parameter
 r2_acc=[0,0.05,0.5,1];            %radius ACC
 Ct=0.03:0.02:0.15;                %coupling theta waves
 damp_acc=[0,0.003, 0.03, 0.3];    %damping parameter ACC
-acc_slope=10;                     %acc_slope
+acc_slope=10;                     %pMFC_slope
 
 %Critic
 lp=0.1;                           %learning rate RL unit
