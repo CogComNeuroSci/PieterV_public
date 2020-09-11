@@ -12,7 +12,7 @@ POT=Tr/6:Tr/6:Tr;               %point of switch to task rule 2 (trial 20)
 part1=1:POT(1);                 %first part
 part2=POT(1)+1:POT(2);          %second part
 part3=POT(2)+1:POT(3);          %third part
-part4=POT(3)+1:POT(4);
+part4=POT(3)+1:POT(4);          %...
 part5=POT(4)+1:POT(5);
 part6=POT(5)+1:POT(6);
 %% basic model build-up
@@ -133,8 +133,8 @@ Objective(1,R2,[part3, part6])=1;
 Objective(2,R3,[part3, part6])=1;
 
 %% simulation loops
-for b=1:betas
-    for r=1:Rep
+for b=1:betas                           %learning rates
+    for r=1:Rep                         %replications
 %% model initialization
 %Processing module
 Rate_Input=zeros(nStim,Tr);             %Input rate neurons
@@ -177,6 +177,7 @@ rew=zeros(1,Tr);                    %track accuracy
 %trial loop
 for trial=1:Tr
     
+    %Initialize input vector
     Z(:,trial)=Activation(:,Input(1,trial)); 
 
     %Input layer activation
@@ -189,7 +190,8 @@ for trial=1:Tr
     %Output layer activation 
     net_Out(:,trial)=W_M1O(:,:,trial)'*Rate_M1(:,trial)-bias;
     Rate_Out(:,trial)=ones(nResp,1)./(ones(nResp,1)+exp(-net_Out(:,trial))); 
-            
+    
+    %Response determination
     [re,rid]=max(Rate_Out(:,trial));
     if rid==1
         response(1,trial)= 1;  
@@ -218,6 +220,7 @@ for trial=1:Tr
     %update weights from input to hidden layer
     W_IM1(:,:,trial+1)=squeeze(W_IM1(:,:,trial))+beta(1,b)*Rate_Input(:,trial)*squeeze(delta_M1(:,trial))';
     
+    %print progress
     prog=trial
 end;
 
