@@ -100,8 +100,10 @@ rew=zeros(1,Tr);                %reward or accuracy
                 W(p,q,trial+1)=W(p,q,trial)+Beta(1,b)*(objective(p,q,trial)-Rate(q,trial))*Rate(p,trial);
             end;
         end;
+    %print progress
     prog=trial
     end;
+    %save
     save(['Beta',num2str(b),'Rep',num2str(r),'_RWonly']); %write data to file with beta iteration and replication as name
     end; 
 end;
