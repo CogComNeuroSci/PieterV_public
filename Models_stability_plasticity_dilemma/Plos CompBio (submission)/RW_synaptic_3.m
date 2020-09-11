@@ -12,7 +12,7 @@ POT=Tr/6:Tr/6:Tr;                 %point of switch to task rule 2 (trial 20)
 part1=1:POT(1);                   %first part
 part2=POT(1)+1:POT(2);            %second part
 part3=POT(2)+1:POT(3);            %third part
-part4=POT(3)+1:POT(4);
+part4=POT(3)+1:POT(4);            %...
 part5=POT(4)+1:POT(5);
 part6=POT(5)+1:POT(6);
 
@@ -25,6 +25,7 @@ Activation(1,1)=1;
 Activation(2,2)=1;
 Activation(3,3)=1;
 
+%Learning objectives
 objective=zeros(nUnits,nUnits,Tr);
 
 objective(1,4,[part1,part4])=1;
@@ -38,7 +39,7 @@ objective(2,4,[part3,part6])=1;
 objective(3,5,[part3,part6])=1;
 
 %% simulation loops
-for b=1:betas
+for b=1:betas               %Learning rate loop
     for r=1:Rep             %replication loop
 
 %%Processing unit
@@ -68,6 +69,7 @@ rew=zeros(1,Tr);                %reward or accuracy
 
     for trial=1:Tr          %trial loop
         
+        %Define input array
         Z(:,trial)=Activation(:,Input(1,trial));
 
         %updating rate code units
