@@ -14,7 +14,7 @@ POT=Tr/6:Tr/6:Tr;                 %point of switch to task rule 2 (trial 20)
 part1=1:POT(1);                   %first part
 part2=POT(1)+1:POT(2);            %second part
 part3=POT(2)+1:POT(3);            %third part
-part4=POT(3)+1:POT(4);
+part4=POT(3)+1:POT(4);            %...
 part5=POT(4)+1:POT(5);
 part6=POT(5)+1:POT(6);
 
@@ -22,8 +22,8 @@ part6=POT(5)+1:POT(6);
 % Processing unit
 nStim=9;                 %number input nodes
 nM1=6;                   %number hidden nodes in module 1
-nM2=6;
-nM3=6;
+nM2=6;                   %... module 2
+nM3=6;                   %... module 3
 nResp=3;                 %number of response options
 nInput=18;               %number of input patterns
 bias=5;                  %bias parameter
@@ -37,7 +37,7 @@ decay=0.9;               %decay parameter
 r2_acc=0.05;             %radius pMFC
 Ct=0.07;                 %coupling theta waves
 damp_acc=0.003;          %damping parameter pMFC
-acc_slope=10;            %acc slope parameter
+acc_slope=10;            %pMFC slope parameter
 
 %RL unit
 lp=0.01;                %learning parameter V
@@ -139,7 +139,7 @@ LFC(stm+1,1)=1;
 Inhibition=zeros(length(Modules),Tr);
 
 ACC=zeros(2,T,Tr);           %pMFC phase units
-Be=zeros(T,Tr);              %bernoulli (rate code ACC)
+Be=zeros(T,Tr);              %bernoulli (rate code pMFC)
 
 %% RL unit
 rew=zeros(1,Tr);            %reward/accuracy record
@@ -248,6 +248,7 @@ Hit=zeros(T,Tr);                 %Hit record
             ACC(1,t+1,trial)=ACC(1,t,trial)-Ct*ACC(2,t,trial)-damp_acc*(r2_ACC(t,trial)>r2_acc)*ACC(1,t,trial); % pMFC exc cell
             ACC(2,t+1,trial)=ACC(2,t,trial)+Ct*ACC(1,t,trial)-damp_acc*(r2_ACC(t,trial)>r2_acc)*ACC(2,t,trial); % pMFC inh cell
             
+            %Bursts to pMFC
             if trial>1
                 if negPE(1,trial-1)>0 
                     Be_ACC=gaussmf(t,[12.5,100]);
@@ -263,7 +264,7 @@ Hit=zeros(T,Tr);                 %Hit record
             Be(t,trial)=1/(1+exp(-acc_slope*(ACC(1,t,trial)-1)));
             prob=rand;
             
-            %burst
+            %Bursts to Processing Unit
             if prob<Be(t,trial)
                 Gaussian=randn(1,2); %Gaussian noise
                 Hit(t,trial)=1;   %record hit is given
@@ -308,7 +309,7 @@ Hit=zeros(T,Tr);                 %Hit record
             Be(time,trial)=1/(1+exp(-acc_slope*(ACC(1,time,trial)-1)));
             prob=rand;
             
-            %burst
+            %Bursts to Processing unit
             if prob<Be(time,trial)
                 Gaussian=randn(1,2); %Gaussian noise
                 Hit(time,trial)=1;   %record hit is given
@@ -336,7 +337,7 @@ Hit=zeros(T,Tr);                 %Hit record
             
         end;        %end of trialloop 
         
-        
+        %Response determination
         maxi=squeeze(max(Rate_Out(:,:,trial),[],2));
         [re,rid]=max(maxi);
         if rid==1
@@ -373,7 +374,7 @@ Hit=zeros(T,Tr);                 %Hit record
             Inhibition(:,trial)=Inhibition(:,trial-1)*0.9;
         end;
         
-        %LFC update
+        %If switch is needed
         if S(1,trial)>0.5
             
             Inhibition(stm,trial)=-2;
@@ -443,6 +444,7 @@ Hit=zeros(T,Tr);                 %Hit record
                 sync_IM3(p,M,trial)=corr(squeeze(Phase_Input(p,1,251:T,trial)),squeeze(Phase_M3(M,1,251:T,trial)));
             end;
         end;
+        %print progress
         prog=trial
     end;
 
