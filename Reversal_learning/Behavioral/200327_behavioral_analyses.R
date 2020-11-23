@@ -20,6 +20,7 @@ Data_folder="/Volumes/Harde ploate/EEG_reversal_learning/Behavioral_data/Data"
 RW_fit_folder="/Volumes/Harde ploate/EEG_reversal_learning/model_fitting/RW_data"
 Hybrid_fit_folder="/Volumes/Harde ploate/EEG_reversal_learning/model_fitting/Hybrid_data"
 Sync_fit_folder="/Volumes/Harde ploate/EEG_reversal_learning/model_fitting/Sync_data"
+Sync_bis_folder="/Volumes/Harde ploate/EEG_reversal_learning/model_fitting/Sync_data/bis"
 Figure_folder="/Volumes/Harde ploate/EEG_reversal_learning/Behavioral_data/figures/"
 setwd(Data_folder)
 
@@ -134,6 +135,20 @@ Data$RW_likelihood<-Data_model$Response_likelihood
 
 RW_data<-read.delim('RW_output.csv', header=TRUE, sep = ",", quote = "\"",dec = ".", fill = TRUE)
 
+setwd(Sync_bis_folder)
+
+Sync_bis_data<-read.delim('Sync_output_0.csv', header=TRUE, sep = ",", quote = "\"",dec = ".", fill = TRUE)
+Sync_bis_data<-Sync_bis_data[,c(2,8)]
+Sync_bis_data$AIC_original<-Sync_data$AIC
+Sync_bis_data$min_AIC<-apply(Sync_bis_data[,2:3], 1, FUN=min)
+Sync_bis_data$delta<-exp((-1/2)*(Sync_bis_data$AIC-Sync_bis_data$min_AIC))
+Sync_bis_data$delta_original<-exp((-1/2)*(Sync_bis_data$AIC_original-Sync_bis_data$min_AIC))
+Sync_bis_data$wAIC<-Sync_bis_data$delta/(Sync_bis_data$delta+Sync_bis_data$delta_original)
+Sync_bis_data$wAIC_original<-Sync_bis_data$delta_original/(Sync_bis_data$delta+Sync_bis_data$delta_original)
+mean(Sync_bis_data$wAIC)
+#0.2262788
+mean(Sync_bis_data$wAIC_original)
+#0.7737212
 #decode some extra variables
 for (data in c(1:(Tr*pp))){
   if (Data$Tr[data]>239 && Data$Tr[data]<255){
@@ -141,11 +156,11 @@ for (data in c(1:(Tr*pp))){
   }
   if (Data$corr[data]==0){
     Data$weight[data]=1-Data$weight[data]
-    Data$Q_corr_likelihood[data]=1-Data$RW_likelihood[data]
+    Data$RW_corr_likelihood[data]=1-Data$RW_likelihood[data]
     Data$H_corr_likelihood[data]=1-Data$Hybrid_likelihood[data]
     Data$S_corr_likelihood[data]=1-Data$Sync_likelihood[data]
   }else{
-    Data$Q_corr_likelihood[data]=Data$RW_likelihood[data]
+    Data$RW_corr_likelihood[data]=Data$RW_likelihood[data]
     Data$H_corr_likelihood[data]=Data$Hybrid_likelihood[data]
     Data$S_corr_likelihood[data]=Data$Sync_likelihood[data]
   }
@@ -284,7 +299,7 @@ count<-table(Switches$jump_detect,Switches$ppnr)
 #make plot
 jpeg(paste(Figure_folder,"switch_presses.jpeg"), width=21, height= 14, units="cm",pointsize=8, res=300)
 barplot(count, xlab="Participants", ylab="Counts", legend.text = c("correct", "too late","too early"),    args.legend=list(x=20,y=15, bty = "n"), col = c("red","blue","black"), main="Switch presses", beside=TRUE)
-abline(h=7, col='green',lwd=2, lty=2)
+abline(h=7, col='lightgreen',lwd=2, lty=2)
 dev.off()
 
 #compare blocks with and without switch indication
@@ -359,7 +374,7 @@ block1<-block1[!is.na(block1[,19]),]
 block1[block1$DetectP==3,19]<-2
 
 block1$sinceDetect<-0
-block1$jump_detect<-as.numeric(block1$jump_detect)
+block1$jump_detect<-as.numeric(block1$jump_detect)-1
 for (x in c(2:length(block1$Block))){
   if (block1$jump_detect[x]>0){
     block1$sinceDetect[x]<-0
@@ -461,7 +476,7 @@ H_lik_figure<-ggplot()+
   geom_ribbon(aes(x=H_lik_mean_dat$Switch_pass, ymin=H_lik_mean_dat$H_lik-H_lik_mean_dat$ci, ymax= H_lik_mean_dat$H_lik+H_lik_mean_dat$ci),alpha=0.5, fill="red")+
   theme_classic()+
   theme(text = element_text(size=8, family="Times"), plot.title = element_text(size = 8, face = "bold", hjust=0.5, family="Times"))+
-  ggtitle("Hybrid Model")+
+  ggtitle("ALR Model")+
   labs(y="Accuracy/ L(correct) %")+
   labs(x="Trial to rule switch")+
   scale_x_continuous(limits=c(0,30), oob=rescale_none)+
@@ -572,7 +587,7 @@ LL_fig<-ggplot(data=Model_dat[Model_dat$Type==1,], aes(x=Model, y=Measure))+
                   geom_errorbar(aes(ymin=Min, ymax=Max), width=.2, position=position_dodge(.9))+
                   labs(y="-LogLikelihood")+
                   labs(x="Model")+
-                  scale_x_discrete(labels=c("1"="bSync", "2"= "Hybrid", "3"= "RW"))+
+                  scale_x_discrete(labels=c("1"="bSync", "2"= "ALR", "3"= "RW"))+
                   scale_y_continuous(limits =c(205,210), oob=rescale_none)+
                   theme_classic()+
                   theme(text = element_text(size=8, family="Times"))
@@ -582,7 +597,7 @@ AIC_fig<-ggplot(data=Model_dat[Model_dat$Type==2,], aes(x=Model, y=Measure))+
   geom_errorbar(aes(ymin=Min, ymax=Max), width=.2, position=position_dodge(.9))+
   labs(y="AIC")+
   labs(x="Model")+
-  scale_x_discrete(labels=c("1"="bSync", "2"= "Hybrid", "3"= "RW"))+
+  scale_x_discrete(labels=c("1"="bSync", "2"= "ALR", "3"= "RW"))+
   scale_y_continuous(limits =c(415,430), oob=rescale_none)+
   theme_classic()+
   theme(text = element_text(size=8, family="Times"))
@@ -592,7 +607,7 @@ wAIC_fig<-ggplot(data=Model_dat[Model_dat$Type==3,], aes(x=Model, y=Measure))+
   geom_errorbar(aes(ymin=Min, ymax=Max), width=.2, position=position_dodge(.9))+
   labs(y="wAIC")+
   labs(x="Model")+
-  scale_x_discrete(labels=c("1"="bSync", "2"= "Hybrid", "3"= "RW"))+
+  scale_x_discrete(labels=c("1"="bSync", "2"= "ALR", "3"= "RW"))+
   scale_y_continuous(limits =c(0,1), oob=rescale_none)+
   theme_classic()+
   theme(text = element_text(size=8, family="Times"))
@@ -604,12 +619,19 @@ cor.test(Weight_AIC_dat$S_wAIC,Sync_data$Temperature, method="spearman")
 cor.test(Weight_AIC_dat$S_wAIC,means_after$cor, method="spearman")
 cor.test(Weight_AIC_dat$S_wAIC,mean_logRT$RT, method="spearman")
 
+cor.test(Weight_AIC_dat$RW_wAIC,RW_data$Learning.rate)
+cor.test(Weight_AIC_dat$RW_wAIC,RW_data$Temperature)
+
+cor.test(Weight_AIC_dat$H_wAIC,Hybrid_data$Learning.rate)
+cor.test(Weight_AIC_dat$H_wAIC,Hybrid_data$Temperature)
+cor.test(Weight_AIC_dat$H_wAIC,Hybrid_data$Decrease)
+
 Correlation_plotCumulation<-ggplot(Sync_data,aes(y=Sync_data$Cumulation, x=Weight_AIC_dat$S_wAIC))+
   geom_point()+
   geom_smooth(method=lm)+
   labs(x="wAIC bSync")+
   labs(y="Cumulation")+
-  ggtitle('rho=-0.708, p<0.001')+
+  ggtitle('p < .001')+
   theme_classic()+
   theme(text = element_text(size=8, family="Times"),plot.title = element_text(size = 8, face = "italic", hjust=0.5, family="Times"))
 
@@ -618,7 +640,7 @@ Correlation_plotLearningLow<-ggplot(Sync_data,aes(y=Sync_data$Learning.low, x=We
   geom_smooth(method=lm)+
   labs(x="wAIC bSync")+
   labs(y="Mapping learnrate")+
-  ggtitle('rho=-0.145, p=0.468')+
+  ggtitle('p = .468')+
   theme_classic()+
   theme(text = element_text(size=8, family="Times"),plot.title = element_text(size = 8, face = "italic", hjust=0.5, family="Times"))
 
@@ -627,7 +649,7 @@ Correlation_plotLearningHigh<-ggplot(Sync_data,aes(y=Sync_data$Learning.high, x=
   geom_smooth(method=lm)+
   labs(x="wAIC bSync")+
   labs(y="Switch learnrate")+
-  ggtitle('rho=-0.761, p<0.001')+
+  ggtitle('p < .001')+
   theme_classic()+
   theme(text = element_text(size=8, family="Times"),plot.title = element_text(size = 8, face = "italic", hjust=0.5, family="Times"))
 
@@ -636,7 +658,7 @@ Correlation_plotTemperature<-ggplot(Sync_data,aes(y=Sync_data$Temperature, x=Wei
   geom_smooth(method=lm)+
   labs(x="wAIC bSync")+
   labs(y="Temperature")+
-  ggtitle('rho=-0.497, p=0.008')+
+  ggtitle('p = .008')+
   theme_classic()+
   theme(text = element_text(size=8, family="Times"),plot.title = element_text(size = 8, face = "italic", hjust=0.5, family="Times"))
 
@@ -645,7 +667,7 @@ Correlation_plotaccuracy<-ggplot(Sync_data,aes(y=means_after$corr, x=Weight_AIC_
   geom_smooth(method=lm)+
   labs(x="wAIC bSync")+
   labs(y="Accuracy")+
-  ggtitle('rho=-0.510, p=0.007')+
+  ggtitle('p = .007')+
   theme_classic()+
   theme(text = element_text(size=8, family="Times"),plot.title = element_text(size = 8, face = "italic", hjust=0.5, family="Times"))
 
@@ -657,23 +679,39 @@ extra_wAIC[extra_wAIC$wAIC<.2,2]<-1
 extra_wAIC[extra_wAIC$wAIC>.2,2]<-2
 extra_wAIC[extra_wAIC$wAIC>.5,2]<-3
 
+RW_lik_dat$Group<-NA
+H_lik_dat$Group<-NA
+S_lik_dat$Group<-NA
+RW_lik_dat$Group[1:(31*27)]<-rep(extra_wAIC$group,31)
+H_lik_dat$Group[1:(31*27)]<-rep(extra_wAIC$group,31)
+S_lik_dat$Group[1:(31*27)]<-rep(extra_wAIC$group,31)
+RW_lik_mean_dat_bis<-summarySE(data = RW_lik_dat, measurevar = "RW_lik", groupvars=c("Switch_pass","Group"))
+H_lik_mean_dat_bis<-summarySE(data = H_lik_dat, measurevar = "H_lik", groupvars=c("Switch_pass","Group"))
+S_lik_mean_dat_bis<-summarySE(data = S_lik_dat, measurevar = "S_lik", groupvars=c("Switch_pass","Group"))
+RW_lik_mean_dat_bis$Group<-as.factor(RW_lik_mean_dat_bis$Group)
+H_lik_mean_dat_bis$Group<-as.factor(H_lik_mean_dat_bis$Group)
+S_lik_mean_dat_bis$Group<-as.factor(S_lik_mean_dat_bis$Group)
+
 extra_wAIC<-extra_wAIC[order(extra_wAIC$wAIC),]
 extra_wAIC$group<-as.factor(extra_wAIC$group)
 
-Group_plot<-ggplot(extra_wAIC, aes(y=ppnr, x=wAIC, color=group, fill=group))+
-            geom_point()+
-            labs(y="Participants")+
-            labs(x="wAIC bSync")+
+Group_plot<-ggplot(extra_wAIC, aes(y=wAIC, x=group, color=group, fill=group))+
+            geom_point(size=0.5)+
+            geom_violin(alpha=0.5)+
+            labs(y="wAIC bSync")+
+            labs(x="group")+
             ggtitle('wAIC groups')+
             theme_classic()+
-            theme(text = element_text(size=8, family="Times"),plot.title = element_text(size = 8, face = "italic", hjust=0.5, family="Times"))+
-            scale_colour_manual(values=c("red", "blue","darkgreen"),name = 'wAIC groups', labels = c('0.1','0.4','0.7'))+
-            scale_fill_manual(values=c("red", "blue","darkgreen"))+
-            guides(fill= FALSE, color=FALSE)
+            theme(text = element_text(size=8, family="Times"),plot.title = element_text(size = 8, face = "italic", hjust=0.5, family="Times"), legend.position = "bottom")+
+            scale_colour_manual(values=c("red", "blue","lightgreen"),name = 'wAIC groups', labels = c('0.1','0.4','0.7'))+
+            scale_fill_manual(values=c("red", "blue","lightgreen"),name = 'wAIC groups', labels = c('0.1','0.4','0.7'))+
+            scale_x_discrete(labels=c('1'='0.1', '2'='0.4', '3'='0.7'))+
+            scale_y_continuous(limits = c(0,0.8))#+
+            #guides(fill= FALSE, color=FALSE)
 
 Group_plot
 
-Correlation_figure<- ggarrange(Correlation_plotLearningLow,Correlation_plotTemperature, Correlation_plotLearningHigh, Correlation_plotCumulation, Correlation_plotaccuracy, Group_plot, ncol=2, nrow=3)
+Correlation_figure<- ggarrange(Correlation_plotLearningLow,Correlation_plotTemperature, Correlation_plotLearningHigh, Correlation_plotCumulation, Correlation_plotaccuracy, ncol=3, nrow=2)
 
 Comparison_figure<-ggarrange(LL_fig, wAIC_fig, Correlation_figure, ncol=3, widths=c(0.7,0.7,1), labels=c("C","","D"), font.label = list(size=12, face="bold", family="Times"))
 Comparison_figure
@@ -685,7 +723,7 @@ RW_learningrate<-ggplot(data=RW_data, aes(x=Learning.rate))+
                 theme_classic()+
                 theme(text = element_text(size=8, family="Times"))+
                 labs(y="")+
-                labs(x="Mapping learnrate")+
+                labs(x="Mapping Learnrate")+
                 scale_x_continuous(breaks=seq(0.8,0.85, 0.05))
 
 RW_Temperature<-ggplot(data=RW_data, aes(x=Temperature))+
@@ -696,7 +734,7 @@ RW_Temperature<-ggplot(data=RW_data, aes(x=Temperature))+
   labs(x="Temperature")+
   scale_x_continuous(breaks=seq(0.4,0.42, 0.02))
 
-RW_param_figure<-ggarrange(RW_Learningrate, RW_Temperature, ncol=2, nrow=2)
+RW_param_figure<-ggarrange(RW_learningrate, RW_Temperature, ncol=2, nrow=2)
 RW_param_figure<-annotate_figure(RW_param_figure, top=text_grob("RW model", size=8, face="bold", family="Times"))
 
 #Hybrid model
@@ -725,7 +763,7 @@ H_Decrease<-ggplot(data=Hybrid_data, aes(x=Decrease))+
   scale_x_continuous(breaks=seq(0.85,0.9, 0.05))
 
 H_param_figure<-ggarrange(H_Learningrate, H_Temperature, H_Decrease, ncol=2, nrow=2)
-H_param_figure<-annotate_figure(H_param_figure, top=text_grob("Hybrid model", size=8, face="bold", family="Times"))
+H_param_figure<-annotate_figure(H_param_figure, top=text_grob("ALR model", size=8, face="bold", family="Times"))
 
 #Sync model
 S_Learningrate1<-ggplot(data=Sync_data, aes(x=Learning.low))+
@@ -770,7 +808,7 @@ Parameter_figure
 table1<-rbind(cbind(round(mean(RW_data$LogLik),digits=2), round(sd(RW_data$LogLik),digits = 2)),cbind(round(mean(Hybrid_data$LogLik), digits=2), round(sd(Hybrid_data$LogLik), digits=2)), cbind(round(mean(Sync_data$LogLik), digits=2), round(sd(Sync_data$LogLik), digits=2)) )
 table2<-rbind(cbind(round(mean(RW_data$AIC), digits=2), round(sd(RW_data$AIC), digits=2)),cbind(round(mean(Hybrid_data$AIC), digits=2), round(sd(Hybrid_data$AIC), digits=2)), cbind(round(mean(Sync_data$AIC), digits=2), round(sd(Sync_data$AIC), digits=2)) )
 table3<-rbind(cbind(round(mean(Weight_AIC_dat$RW_wAIC), digits=2), round(sd(Weight_AIC_dat$RW_wAIC), digits=2)),cbind(round(mean(Weight_AIC_dat$H_wAIC), digits=2), round(sd(Weight_AIC_dat$H_wAIC), digits=2)), cbind(round(mean(Weight_AIC_dat$S_wAIC), digits=2), round(sd(Weight_AIC_dat$S_wAIC), digits=2)) )
-ModelLabels<-c("RW", "Hybrid", "bSync")
+ModelLabels<-c("RW", "ALR", "bSync")
 tabletot<-cbind(ModelLabels,table1, table2, table3)
 tabletot<-as.data.frame(tabletot)
 names(tabletot)<-c("Model","Mean LL", "std LL", "Mean AIC", "std AIC", "Mean wAIC", "std wAIC")
@@ -779,6 +817,7 @@ grid.draw(g)
 g2<-ggtexttable(tabletot, rows = NULL, theme = ttheme("minimal",base_size = 8))
 
 g2
+
 #Total figure
 Total_figure<-ggdraw() +
        draw_plot(RW_lik_figure, x = 0, y = .41, width = .33, height = .25) +
@@ -787,11 +826,10 @@ Total_figure<-ggdraw() +
        draw_plot(RW_param_figure, x = 0, y = .66, width = .33, height = .33) +
        draw_plot(H_param_figure, x = .33, y = .66, width = .33, height = .33) +
        draw_plot(S_param_figure, x = .66, y = .66, width = .33, height = .33) +
-       draw_grob(tableGrob(tabletot, theme=ttheme_minimal(base_size = 8,base_family = "Times"), rows = NULL), x=0, y=0.04, width=0.6, height=0.33)+
-       #draw_plot(LL_fig, x = 0, y = .075, width = .25, height = .25) +
-       #draw_plot(wAIC_fig, x = .25, y = .075, width = .25, height = .25) +
-       draw_plot(Correlation_figure, x = 0.6, y = 0, width = .4, height = .41) +
-       draw_plot_label(label = c("A","B","C","D"), x=c(0,0,0,0.57),y=c(1,0.66,0.38,0.41), size = 12,fontface="bold", family="Times")
+       #draw_grob(tableGrob(tabletot, theme=ttheme_minimal(base_size = 8,base_family = "Times"), rows = NULL), x=0, y=0.04, width=0.6, height=0.33)+
+       draw_plot(Group_plot, x = 0, y = .04, width = .25, height = .25) +
+       draw_plot(Correlation_figure, x = 0.3, y = 0, width = .7, height = .41) +
+       draw_plot_label(label = c("A","B","C","D"), x=c(0,0,0,0.275),y=c(1,0.66,0.38,0.38), size = 12,fontface="bold", family="Times")
 
 Total_figure
 
@@ -906,5 +944,158 @@ bis_figure<-ggarrange(LL_bis, AIC_bis, ncol=2, common.legend = TRUE)
 
 All_figure<-ggarrange(bis_figure, Correlation_figure, nrow=2)
 ggsave(filename= paste(Figure_folder, "Split_model.jpeg"), All_figure, width=10, height=10, units="cm", dpi=300)
+
+ggsave(filename= paste(Figure_folder, "Groups.jpeg"), Group_plot, width=5, height =5, units ="cm", dpi=300)
+
+#Comparative plot for RWlearn model
+RW_lik_figure_bis<-ggplot()+
+  geom_point(aes(x=corr_mean_dat$Switch_pass, y=corr_mean_dat$corr2))+
+  geom_errorbar(aes(x=corr_mean_dat$Switch_pass, ymin=corr_mean_dat$corr2-corr_mean_dat$ci, ymax=corr_mean_dat$corr2+corr_mean_dat$ci), width=.2)+
+  geom_line(aes(x=RW_lik_mean_dat_bis$Switch_pass, y=RW_lik_mean_dat_bis$RW_lik, color=RW_lik_mean_dat_bis$Group), size=2)+
+  geom_ribbon(aes(x=RW_lik_mean_dat_bis$Switch_pass, ymin=RW_lik_mean_dat_bis$RW_lik-RW_lik_mean_dat_bis$ci, ymax= RW_lik_mean_dat_bis$RW_lik+RW_lik_mean_dat_bis$ci, fill=RW_lik_mean_dat_bis$Group),alpha=0.5)+
+  theme_classic()+
+  theme(text = element_text(size=8, family="Times"), plot.title = element_text(size = 8, face = "bold", hjust=0.5, family="Times"))+
+  ggtitle("RW Model")+
+  labs(y="Accuracy/ L(correct) %")+
+  labs(x="Trial to rule switch")+
+  scale_colour_manual(values=c("red", "blue","lightgreen"),name = 'wAIC groups', labels = c('0.1','0.4','0.7'))+
+  scale_fill_manual(values=c("red", "blue","lightgreen"))+
+  guides(fill= FALSE, color=FALSE)+
+  scale_x_continuous(limits=c(0,30), oob=rescale_none)+
+  scale_y_continuous(limits =c(0,1), oob=rescale_none, labels = c("0", "25", "50", "75", "100"))
+
+#Comparative plot for Hybrid model
+H_lik_figure_bis<-ggplot()+
+  geom_point(aes(x=corr_mean_dat$Switch_pass, y=corr_mean_dat$corr2))+
+  geom_errorbar(aes(x=corr_mean_dat$Switch_pass, ymin=corr_mean_dat$corr2-corr_mean_dat$ci, ymax=corr_mean_dat$corr2+corr_mean_dat$ci), width=.2)+
+  geom_line(aes(x=H_lik_mean_dat_bis$Switch_pass, y=H_lik_mean_dat_bis$H_lik, color=H_lik_mean_dat_bis$Group), size=2)+
+  geom_ribbon(aes(x=H_lik_mean_dat_bis$Switch_pass, ymin=H_lik_mean_dat_bis$H_lik-H_lik_mean_dat_bis$ci, ymax= H_lik_mean_dat_bis$H_lik+H_lik_mean_dat_bis$ci, fill=H_lik_mean_dat_bis$Group),alpha=0.5)+
+  theme_classic()+
+  theme(text = element_text(size=8, family="Times"), plot.title = element_text(size = 8, face = "bold", hjust=0.5, family="Times"))+
+  ggtitle("ALR Model")+
+  labs(y="Accuracy/ L(correct) %")+
+  labs(x="Trial to rule switch")+
+  scale_colour_manual(values=c("red", "blue","lightgreen"),name = 'wAIC groups', labels = c('0.1','0.4','0.7'))+
+  scale_fill_manual(values=c("red", "blue","lightgreen"))+
+  guides(fill= FALSE, color=FALSE)+
+  scale_x_continuous(limits=c(0,30), oob=rescale_none)+
+  scale_y_continuous(limits =c(0,1), oob=rescale_none, labels = c("0", "25", "50", "75", "100"))
+
+#Comparative plot for Sync model
+S_lik_figure_bis<-ggplot()+
+  geom_point(aes(x=corr_mean_dat$Switch_pass, y=corr_mean_dat$corr2))+
+  geom_errorbar(aes(x=corr_mean_dat$Switch_pass, ymin=corr_mean_dat$corr2-corr_mean_dat$ci, ymax=corr_mean_dat$corr2+corr_mean_dat$ci), width=.2)+
+  geom_line(aes(x=S_lik_mean_dat_bis$Switch_pass, y=S_lik_mean_dat_bis$S_lik, color=S_lik_mean_dat_bis$Group), size=2)+
+  geom_ribbon(aes(x=S_lik_mean_dat_bis$Switch_pass, ymin=S_lik_mean_dat_bis$S_lik-S_lik_mean_dat_bis$ci, ymax= S_lik_mean_dat_bis$S_lik+S_lik_mean_dat_bis$ci, fill=S_lik_mean_dat_bis$Group),alpha=0.5)+
+  theme_classic()+
+  theme(text = element_text(size=8, family="Times"), plot.title = element_text(size = 8, face = "bold", hjust=0.5, family="Times"))+
+  ggtitle("bSync Model")+
+  labs(y="Accuracy/ L(correct) %")+
+  labs(x="Trial to rule switch")+
+  scale_colour_manual(values=c("red", "blue","lightgreen"),name = 'wAIC groups', labels = c('0.1','0.4','0.7'))+
+  scale_fill_manual(values=c("red", "blue","lightgreen"))+
+  guides(fill= FALSE, color=FALSE)+
+  scale_x_continuous(limits=c(0,30), oob=rescale_none)+
+  scale_y_continuous(limits =c(0,1), oob=rescale_none, labels = c("0", "25", "50", "75", "100"))
+
+#make figure
+Lik_figure_bis<-ggarrange(RW_lik_figure_bis, H_lik_figure_bis, S_lik_figure_bis, ncol=3)
+
+Lik_figure_bis
+ggsave(filename= paste(Figure_folder, "Split_fit_figure.jpeg"), Lik_figure_bis, width=15, height=6, units="cm", dpi=300)
+
+Total_figure_bis<-ggdraw() +
+  draw_plot(RW_lik_figure_bis, x = 0, y = .41, width = .33, height = .25) +
+  draw_plot(H_lik_figure_bis, x = .33, y = .41, width = .33, height = .25) +
+  draw_plot(S_lik_figure_bis, x = .66, y = .41, width = .33, height = .25) +
+  draw_plot(RW_param_figure, x = 0, y = .66, width = .33, height = .33) +
+  draw_plot(H_param_figure, x = .33, y = .66, width = .33, height = .33) +
+  draw_plot(S_param_figure, x = .66, y = .66, width = .33, height = .33) +
+  draw_grob(tableGrob(tabletot, theme=ttheme_minimal(base_size = 8,base_family = "Times"), rows = NULL), x=0, y=0.04, width=0.6, height=0.33)+
+  #draw_plot(LL_fig, x = 0, y = .075, width = .25, height = .25) +
+  #draw_plot(wAIC_fig, x = .25, y = .075, width = .25, height = .25) +
+  draw_plot(Correlation_figure, x = 0.6, y = 0, width = .4, height = .41) +
+  draw_plot_label(label = c("A","B","C","D"), x=c(0,0,0,0.57),y=c(1,0.66,0.38,0.41), size = 12,fontface="bold", family="Times")
+
+Total_figure
+
+ggsave(filename= paste(Figure_folder, "Model_comparison.tiff"), Total_figure, width=17.5, height=19, units="cm", dpi=300)
+
+
+#Comparative plot for RWlearn model
+RW_lik_figure_bis<-ggplot()+
+  geom_point(aes(x=corr_mean_dat$Switch_pass, y=corr_mean_dat$corr2))+
+  geom_errorbar(aes(x=corr_mean_dat$Switch_pass, ymin=corr_mean_dat$corr2-corr_mean_dat$ci, ymax=corr_mean_dat$corr2+corr_mean_dat$ci), width=.2)+
+  geom_line(aes(x=RW_lik_mean_dat_bis$Switch_pass, y=RW_lik_mean_dat_bis$RW_lik, color=RW_lik_mean_dat_bis$Group), size=2)+
+  geom_ribbon(aes(x=RW_lik_mean_dat_bis$Switch_pass, ymin=RW_lik_mean_dat_bis$RW_lik-RW_lik_mean_dat_bis$ci, ymax= RW_lik_mean_dat_bis$RW_lik+RW_lik_mean_dat_bis$ci, fill=RW_lik_mean_dat_bis$Group),alpha=0.5)+
+  theme_classic()+
+  theme(text = element_text(size=8, family="Times"), plot.title = element_text(size = 8, face = "bold", hjust=0.5, family="Times"))+
+  ggtitle("RW Model")+
+  labs(y="Accuracy/ L(correct) %")+
+  labs(x="Trial to rule switch")+
+  scale_colour_manual(values=c("red", "blue","lightgreen"),name = 'wAIC groups', labels = c('0.1','0.4','0.7'))+
+  scale_fill_manual(values=c("red", "blue","lightgreen"))+
+  guides(fill= FALSE, color=FALSE)+
+  scale_x_continuous(limits=c(0,30), oob=rescale_none)+
+  scale_y_continuous(limits =c(0,1), oob=rescale_none, labels = c("0", "25", "50", "75", "100"))
+
+#Comparative plot for Hybrid model
+H_lik_figure_bis<-ggplot()+
+  geom_point(aes(x=corr_mean_dat$Switch_pass, y=corr_mean_dat$corr2))+
+  geom_errorbar(aes(x=corr_mean_dat$Switch_pass, ymin=corr_mean_dat$corr2-corr_mean_dat$ci, ymax=corr_mean_dat$corr2+corr_mean_dat$ci), width=.2)+
+  geom_line(aes(x=H_lik_mean_dat_bis$Switch_pass, y=H_lik_mean_dat_bis$H_lik, color=H_lik_mean_dat_bis$Group), size=2)+
+  geom_ribbon(aes(x=H_lik_mean_dat_bis$Switch_pass, ymin=H_lik_mean_dat_bis$H_lik-H_lik_mean_dat_bis$ci, ymax= H_lik_mean_dat_bis$H_lik+H_lik_mean_dat_bis$ci, fill=H_lik_mean_dat_bis$Group),alpha=0.5)+
+  theme_classic()+
+  theme(text = element_text(size=8, family="Times"), plot.title = element_text(size = 8, face = "bold", hjust=0.5, family="Times"))+
+  ggtitle("ALR Model")+
+  labs(y="Accuracy/ L(correct) %")+
+  labs(x="Trial to rule switch")+
+  scale_colour_manual(values=c("red", "blue","lightgreen"),name = 'wAIC groups', labels = c('0.1','0.4','0.7'))+
+  scale_fill_manual(values=c("red", "blue","lightgreen"))+
+  guides(fill= FALSE, color=FALSE)+
+  scale_x_continuous(limits=c(0,30), oob=rescale_none)+
+  scale_y_continuous(limits =c(0,1), oob=rescale_none, labels = c("0", "25", "50", "75", "100"))
+
+#Comparative plot for Sync model
+S_lik_figure_bis<-ggplot()+
+  geom_point(aes(x=corr_mean_dat$Switch_pass, y=corr_mean_dat$corr2))+
+  geom_errorbar(aes(x=corr_mean_dat$Switch_pass, ymin=corr_mean_dat$corr2-corr_mean_dat$ci, ymax=corr_mean_dat$corr2+corr_mean_dat$ci), width=.2)+
+  geom_line(aes(x=S_lik_mean_dat_bis$Switch_pass, y=S_lik_mean_dat_bis$S_lik, color=S_lik_mean_dat_bis$Group), size=2)+
+  geom_ribbon(aes(x=S_lik_mean_dat_bis$Switch_pass, ymin=S_lik_mean_dat_bis$S_lik-S_lik_mean_dat_bis$ci, ymax= S_lik_mean_dat_bis$S_lik+S_lik_mean_dat_bis$ci, fill=S_lik_mean_dat_bis$Group),alpha=0.5)+
+  theme_classic()+
+  theme(text = element_text(size=8, family="Times"), plot.title = element_text(size = 8, face = "bold", hjust=0.5, family="Times"))+
+  ggtitle("bSync Model")+
+  labs(y="Accuracy/ L(correct) %")+
+  labs(x="Trial to rule switch")+
+  scale_colour_manual(values=c("red", "blue","lightgreen"),name = 'wAIC groups', labels = c('0.1','0.4','0.7'))+
+  scale_fill_manual(values=c("red", "blue","lightgreen"))+
+  guides(fill= FALSE, color=FALSE)+
+  scale_x_continuous(limits=c(0,30), oob=rescale_none)+
+  scale_y_continuous(limits =c(0,1), oob=rescale_none, labels = c("0", "25", "50", "75", "100"))
+
+#make figure
+Lik_figure_bis<-ggarrange(RW_lik_figure_bis, H_lik_figure_bis, S_lik_figure_bis, ncol=3)
+
+Lik_figure_bis
+ggsave(filename= paste(Figure_folder, "Split_fit_figure.jpeg"), Lik_figure_bis, width=15, height=6, units="cm", dpi=300)
+
+#Total figure
+Total_figure_bis<-ggdraw() +
+  draw_plot(RW_lik_figure_bis, x = 0, y = 0, width = .33, height = .25) +
+  draw_plot(H_lik_figure_bis, x = .33, y = 0, width = .33, height = .25) +
+  draw_plot(S_lik_figure_bis, x = .66, y = 0, width = .33, height = .25) +
+  draw_plot(RW_param_figure, x = 0, y = .66, width = .33, height = .33) +
+  draw_plot(H_param_figure, x = .33, y = .66, width = .33, height = .33) +
+  draw_plot(S_param_figure, x = .66, y = .66, width = .33, height = .33) +
+  #draw_grob(tableGrob(tabletot, theme=ttheme_minimal(base_size = 8,base_family = "Times"), rows = NULL), x=0, y=0.04, width=0.6, height=0.33)+
+  draw_plot(Group_plot, x = 0, y = .3, width = .25, height = .33) +
+  draw_plot(Correlation_figure, x = 0.3, y = 0.25, width = .7, height = .41) +
+  draw_plot_label(label = c("A","B","C","D"), x=c(0,0,0.275,0),y=c(1,0.66,0.66,0.25), size = 12,fontface="bold", family="Times")
+
+Total_figure_bis
+
+ggsave(filename= paste(Figure_folder, "Model_comparison_bis.tiff"), Total_figure_bis, width=17.5, height=19, units="cm", dpi=300)
+
+
 
 
