@@ -1,3 +1,10 @@
+Time = 'both'; %'Rea' , 'both'
+Dim = 'Where'; %'Where', 'both'
+
+folder = ['/Volumes/backupdisc/Adaptive_control/' Time '_' Dim];
+
+cd(folder)
+
 Tr=600;
 T=1250;
 ITI=250;
@@ -20,7 +27,7 @@ Power_MFC_ITI=NaN(Rep,Tr);
 MFC_all=NaN(Rep, T+1, Tr);
 
 for i = 1:Rep
-    load(['Stroop' num2str(i)]);
+    load(['Stroop_' num2str(i)]);
     
     Relevant_act=squeeze(Phase(1:4,1,:,:));
     Irrelevant_act=squeeze(Phase(5:8,1,:,:));

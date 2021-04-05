@@ -1,3 +1,10 @@
+Time = 'both'; %'Rea' , 'both'
+Dim = 'both'; %'Where', 'both'
+
+folder = ['/Volumes/backupdisc/Adaptive_control/' Time '_' Dim];
+
+cd(folder)
+
 for i=1:30
 %% Defining amount of loops
 srate=500;                      %sampling rate
@@ -93,8 +100,20 @@ Design=sortrows(Design,1);
 
 %% Other
 %Control parameters
-Gamma=0.25;
-Theta=0.75;
+if sum(Time(1:3) == 'Pro')==3 
+    Gamma=0.75;
+elseif sum(Time(1:3) == 'bot')==3
+    Gamma=0.25;
+else 
+    Gamma = 1;
+end;
+
+if sum(Dim(1:4) == 'Wher')==4 || sum(Dim(1:4) == 'both')==4
+    Theta=0.75;
+else
+    Theta=0;
+end;
+
 Beta=10;
 Eta=0.25;
 
@@ -169,10 +188,22 @@ for trial=1:Tr          %trial loop
         cum_E(1:5:end)=0;
         Energy(time,trial)=sum(sum(cum_E));
         
-        r2_acc=Control(1,trial)+Beta*Energy(time,trial);
+        reactive_control = Control(1,trial)+Beta*Energy(time,trial);
+        if sum(Dim(1:4)=='Wher')==4 
+            r2_acc =1;
+        else
+            if sum(Time(1:3)=='Pro')==3
+                r2_acc = Control(1,trial);
+            else
+                r2_acc = reactive_control;
+            end;
+        end;
+           
+        if sum(Time(1:3)=='Rea')==3 || sum(Time(1:3)=='bot')==3
         
-        if r2_acc>Theta
-            LFC(2,time:end,trial)=0;
+            if reactive_control>Theta
+                LFC(2,time:end,trial)=0;
+            end;
         end;
        
         if sum(response(:,trial)) > 0 && RT(1,trial)==2000
@@ -206,6 +237,6 @@ Data=Design;
 Data(:,5)=rew';
 Data(:,6)=RT';
 
-save(['Stroop' num2str(i)], 'Data', 'Phase', 'MFC');
+save(['Stroop_' num2str(i)], 'Data', 'Phase', 'MFC');
 end;
 
