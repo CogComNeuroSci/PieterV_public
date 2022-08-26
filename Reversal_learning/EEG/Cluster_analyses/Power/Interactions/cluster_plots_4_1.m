@@ -1,8 +1,10 @@
+%Define folders
 Homefolder          ='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/';
 Datafolder          ='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Cluster_data/';
 figfolder           = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Figures/Power_Cluster/';
 indicesfolder   = '/Volumes/Harde ploate/EEG_reversal_learning/Behavioral_data/Indices/';
 
+%Load data
 load([Homefolder 'chanloc.mat'])
 chanlocations=chanlocations(1:64);
 
@@ -26,6 +28,7 @@ cluster1_pos=Data_actual_Positive(cluster1_actual_positive,:);
 
 cluster1_neg=Data_actual_Negative(cluster1_actual_negative,:);
 
+%other variables
 srate=512;
 downsample_rate=10;
 time_feedback=-1000:1000/srate:2500; 
@@ -39,6 +42,8 @@ frex=logspace(log10(2), log10(48), 25);               %frequency vector for data
 n_channels=64;                                        %number of channels
 n_trials=480;                                         %number of trials
 
+%extract cluster data and contours of clusters in time-frequency and
+%channel space
 cluster_data=NaN(length(frex),n_channels,length(new_feedback_time),2);
 for i=1:size(cluster1_neg,1)
     cluster_data(cluster1_neg(i,3),cluster1_neg(i,4),cluster1_neg(i,5),1)=cluster1_neg(i,6);
@@ -52,8 +57,11 @@ end;
 delta_contour=isnan(squeeze(nanmean(cluster_data(:,:,:,2),2)));
 delta_channels=nansum(nansum(cluster_data(:,:,:,2),3),1)~=0;
 
+%This makes one matrix with nans for non-clustered data and power for
+%clustered data
 cluster_data=squeeze(nansum(cluster_data,4));
 
+%get peak channels for each cluster
 th= tabulate(cluster1_neg(:,4));
 del= tabulate(cluster1_pos(:,4));
 
@@ -128,6 +136,7 @@ end;
 
 ch=1:64;
 
+%make plots
 figure(6)
 clf;
 subplot(2,1,1)

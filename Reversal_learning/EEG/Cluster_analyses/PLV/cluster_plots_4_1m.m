@@ -1,3 +1,4 @@
+%Define folders
 Homefolder          ='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/';
 Datafolder          ='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/PLV_data/';
 figfolder           = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Figures/';
@@ -5,6 +6,7 @@ figfolder           = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Figu
 load([Homefolder 'chanloc.mat'])
 chanlocations=chanlocations(1:64);
 
+%Load cluster data
 Data_actual_Positive=readtable('OverviewClustersFeedbackCutoff0.9915625Positive.txt');
 Data_actual_Positive=table2array(Data_actual_Positive);
 
@@ -27,6 +29,7 @@ cluster4_pos=Data_actual_Positive(cluster4_actual_positive,:);
 cluster1_neg=Data_actual_Negative(cluster1_actual_negative,:);
 cluster2_neg=Data_actual_Negative(cluster2_actual_negative,:);
 
+%other variables
 srate=512;
 downsample_rate=5;
 time_feedback=-500:1000/(srate/downsample_rate):1500; 
@@ -34,6 +37,8 @@ frex=logspace(log10(2), log10(48), 25);               %frequency vector for data
 n_channels=64;                                        %number of channels
 n_trials=480;                                         %number of trials
 
+%extract cluster data and contours of clusters in time-frequency and
+%channel space
 cluster_data=NaN(length(frex),n_channels,length(time_feedback),6);
 for i=1:size(cluster1_neg,1)
     cluster_data(cluster1_neg(i,3),cluster1_neg(i,4),cluster1_neg(i,5),1)=cluster1_neg(i,6);
@@ -71,8 +76,11 @@ end;
 theta_contra_contour2=isnan(squeeze(nanmean(cluster_data(:,:,:,6),2)));
 theta_contra_channels2=nansum(nansum(cluster_data(:,:,:,6),3),1)~=0;
 
+%This makes one matrix with nans for non-clustered data and power for
+%clustered data
 cluster_data_all=squeeze(nansum(cluster_data,4));
 
+%get peak channels for each cluster
 th_contra= tabulate(cluster2_pos(:,4));
 del_ipsi= tabulate(cluster1_neg(:,4));
 th_ipsi= tabulate(cluster1_pos(:,4));
@@ -94,6 +102,7 @@ del_contra=del_contra(delta_contra_peakchannels,1);
 th_ipsi2=th_ipsi2(theta_ipsi_peakchannels2,1);
 th_contra2=th_contra2(theta_contra_peakchannels2,1);
 
+%make plots
 figure(1)
 clf
 subplot(2,3,1)

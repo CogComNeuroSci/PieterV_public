@@ -1,3 +1,4 @@
+% Define subjects and folders
 homefolder      ='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/';
 Datafolder     ='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Cluster_data/';
 

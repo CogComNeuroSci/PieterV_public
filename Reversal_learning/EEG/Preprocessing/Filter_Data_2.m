@@ -10,7 +10,7 @@ num_subjects    = length(subject_list);
 parentfolder    = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Loaded_files/';  
 newfolder       = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Filtered_files/';  
 
-for s = 25:num_subjects
+for s = 1:num_subjects
     % set subject and subjectfolder to subject s in the loop
     subject = subject_list{s};                              % extract subject from subject array
     fprintf('\n\n\n***subject %d: %s***\n\n\n',s,subject);  % print what subject is being processed in command window
@@ -19,31 +19,15 @@ for s = 25:num_subjects
     EEG =   pop_loadset('filename', ['clean_' subject  '.set'], 'filepath', parentfolder);
     
     %interpolate channels
-    %{
-    if subject=='pp4'
-        EEG =   eeg_interp(EEG, 52);
-        EEG =   eeg_interp(EEG, 28);
-    end; 
-    %}
+
     if s==5 %subject=='pp9'
         EEG =   eeg_interp(EEG, 58);
     end;   
-    %{
-    if subject=='pp11'
-        EEG =   eeg_interp(EEG, 14);
-    end; 
-    %}
+
     if s==10 %subject=='pp16'
         EEG =   eeg_interp(EEG, 29);
         EEG =   eeg_interp(EEG, 30);
     end; 
-    
-    %{
-    if subject=='pp17'
-        EEG =   eeg_interp(EEG, 28);
-        EEG =   eeg_interp(EEG, 30);
-    end;  
-    %}
     
     if s==14 %subject=='pp21'
         EEG =   eeg_interp(EEG, 26);

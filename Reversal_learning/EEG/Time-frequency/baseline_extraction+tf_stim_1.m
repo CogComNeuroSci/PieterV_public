@@ -1,3 +1,4 @@
+%open eeglab
 addpath('/Users/pieter/Documents/MATLAB/eeglab14_1_2b')
 eeglab
 
@@ -7,13 +8,13 @@ newfolder             = = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/
 subject_list    = {'pp3', 'pp5', 'pp6', 'pp7', 'pp9', 'pp10', 'pp12', 'pp14', 'pp15', 'pp16', 'pp18', 'pp19', 'pp20', 'pp21', 'pp22', 'pp23', 'pp24', 'pp25','pp26','pp27','pp28','pp29','pp30','pp31','pp32','pp33','pp34'};
 num_subjects    = length(subject_list);
 
-srate=512;
-timing_of_interest=1:2:3585; %downsampling and cutting of some time
-baseline_time=513:1537;
-frex    = logspace(log10(2),log10(48), 25);
-wavtime = -2:1/srate:2-1/srate;
+srate=512;                                      %sampling rate
+timing_of_interest=1:2:3585;                    %downsampling and cutting of some time
+baseline_time=513:1537;                         %define time of baseline
+frex    = logspace(log10(2),log10(48), 25);     %define frequencies
+wavtime = -2:1/srate:2-1/srate;                 %wavelet time
 halfwav = (length(wavtime)-1)/2;
-num_cycles = logspace(log10(3), log10(8),25);
+num_cycles = logspace(log10(3), log10(8),25);   %wavelet cycles
 nData   = length(timing_of_interest);
 nKern   = length(wavtime);
 nConv   = nData + nKern -1;
@@ -37,12 +38,13 @@ for s=1:num_subjects
     EEG =   pop_loadset('filename', ['Cleaned_' subject '_S.set'], 'filepath', parentfolder);
     
     fprintf('loaded dataset of %s', subject)
-
+    
+    %for memory we record frontal and posterior electrodes separately
     stim_tf_frontal=NaN(length(frex),32,length(timing_of_interest),EEG.trials);
     stim_tf_posterior=NaN(length(frex),32,length(timing_of_interest),EEG.trials);
     
-    %first frontal
     for t=1:EEG.trials
+        %fill removed epochs with nan
         if isnan(EEG.data(1,1,t))
             stim_tf_frontal(fi,:,:,t)=NaN(1,32,length(timing_of_interest),1);
             stim_tf_posterior(fi,:,:,t)=NaN(1,32,length(timing_of_interest),1);
@@ -70,6 +72,7 @@ for s=1:num_subjects
         end;
         fprintf('\n\n done with trial %d', t)
     end;
+    %extract power of baseline period
     baseline_powerf=abs(stim_tf_frontal).^2;
     baseline_powerp=abs(stim_tf_posterior).^2;
     baseline=zeros(length(frex),64);

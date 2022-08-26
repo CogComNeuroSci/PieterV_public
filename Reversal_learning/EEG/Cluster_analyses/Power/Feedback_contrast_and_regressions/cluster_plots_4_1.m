@@ -1,33 +1,25 @@
+% Define folders and variables
 Homefolder          ='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/';
 Datafolder          ='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Cluster_data/';
 figfolder           = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Figures/Power_Cluster';
 
+%load channel locations
 load([Homefolder 'chanloc.mat'])
 chanlocations=chanlocations(1:64);
 
+%load cluster data and extract cluster coordinates in
+%time-frequency-channel space
 Data_actual_Negative=readtable([Datafolder 'OverviewClustersFeedbackCutoff0.99Negative.txt']);
 Data_actual_Negative=table2array(Data_actual_Negative);
 
 Data_actual_Positive=readtable([Datafolder 'OverviewClustersFeedbackCutoff0.99Positive.txt']);
 Data_actual_Positive=table2array(Data_actual_Positive);
 
-% Data_random_Positive=readtable([Datafolder 'ClusterStatisticFeedback_pos_975.txt']);
-% Data_random_Positive=table2array(Data_random_Positive);
-% 
-% Data_random_Negative=readtable([Datafolder 'ClusterStatisticFeedback_neg_975.txt']);
-% Data_random_Negative=table2array(Data_random_Negative);
-
 cluster1_actual_negative=Data_actual_Negative(:,2)==1;
 cluster2_actual_negative=Data_actual_Negative(:,2)==2;
 cluster3_actual_negative=Data_actual_Negative(:,2)==3;
 
-% cluster1_random_negative=Data_random_Negative(:,2)==1;
-% cluster2_random_negative=Data_random_Negative(:,2)==2;
-% cluster3_random_negative=Data_random_Negative(:,2)==3;
-
 cluster1_actual_positive=Data_actual_Positive(:,2)==1;
-
-% cluster1_random_positive=Data_random_Positive(:,2)==1;
 
 cluster1_pos=Data_actual_Positive(cluster1_actual_positive,:);
 
@@ -35,23 +27,7 @@ cluster1_neg=Data_actual_Negative(cluster1_actual_negative,:);
 cluster2_neg=Data_actual_Negative(cluster2_actual_negative,:);
 cluster3_neg=Data_actual_Negative(cluster3_actual_negative,:);
 
-% ClusterStatisticSummary=zeros(2,3);
-% 
-% stat1_positive = max(cluster1_pos(:,6))*size(cluster1_pos,1);
-% ClusterStatisticSummary(1,1) = sum(Data_random_Positive(:,1)>stat1_positive)/size(Data_random_Positive,1);
-% 
-% ClusterStatisticSummary(1,2) = 1;
-% ClusterStatisticSummary(1,3) = 1;
-% 
-% stat1_negative = min(cluster1_neg(:,6))*size(cluster1_neg,1);
-% ClusterStatisticSummary(2,1) = sum(Data_random_Negative(:,1)<stat1_negative)/size(Data_random_Negative,1);
-% 
-% stat2_negative = min(cluster2_neg(:,6))*size(cluster2_neg,1);
-% ClusterStatisticSummary(2,2) = sum(Data_random_Negative(:,2)<stat2_negative)/size(Data_random_Negative,1);
-% 
-% stat3_negative = min(cluster3_neg(:,6))*size(cluster3_neg,1);
-% ClusterStatisticSummary(2,3) = sum(Data_random_Negative(:,3)<stat3_negative)/size(Data_random_Negative,1);
-
+%define time and frequency variables
 srate=512;
 downsample_rate=10;
 time_feedback=-1000:1000/srate:2500; 
@@ -65,6 +41,8 @@ frex=logspace(log10(2), log10(48), 25);               %frequency vector for data
 n_channels=64;                                        %number of channels
 n_trials=480;                                         %number of trials
 
+%get power within the cluster as well as edges in time-frequency and in
+%channel domain
 cluster_data=NaN(length(frex),n_channels,length(new_feedback_time),3);
 for i=1:size(cluster1_pos,1)
     cluster_data(cluster1_pos(i,3),cluster1_pos(i,5),cluster1_pos(i,4),1)=cluster1_pos(i,6);
@@ -84,8 +62,11 @@ end;
 alpha_contour=isnan(squeeze(nanmean(cluster_data(:,:,:,3),2)));
 alpha_channels=nansum(nansum(cluster_data(:,:,:,3),3),1)~=0;
 
+%This makes one matrix with nans for non-clustered data and power for
+%clustered data
 cluster_data=squeeze(nansum(cluster_data,4));
 
+%tabulate cluster data and extract peak channels
 th= tabulate(cluster1_pos(:,5));
 del= tabulate(cluster1_neg(:,5));
 al= tabulate(cluster2_neg(:,5));
@@ -98,6 +79,7 @@ th=th(theta_peakchannels,1);
 del=del(delta_peakchannels,1);
 al=al(alpha_peakchannels,1);
 
+%make figures
 figure(1)
 clf
 subplot(1,2,1)

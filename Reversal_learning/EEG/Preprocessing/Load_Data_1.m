@@ -11,7 +11,7 @@ parentfolder    = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Raw_data
 newfolder       = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Loaded_files/';     
 
 %% Loop for all subjects
-for s = 27:27%num_subjects
+for s = 1:num_subjects
     % set subject and subjectfolder to subject s in the loop
     subject = subject_list{s};                              % extract subject from subject array
     fprintf('\n\n\n***subject %d: %s***\n\n\n',s,subject);  % print what subject is being processed in command window

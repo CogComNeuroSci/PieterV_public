@@ -7,13 +7,13 @@ indicesfolder   = '/Volumes/Harde ploate/EEG_reversal_learning/Behavioral_data/I
 num_trials=480;
 num_subjects=27;
 num_channels=64;
-%% Loading some data     
+%% Loading some data 
+%electrode distance matrix
 load([homefolder,'ElectrodeDistance']);              % epmap         electrode * electrode
-    
+
+%feedback indices
 Feedback=readtable([indicesfolder, 'Feedback.csv']);
 Feedback=table2array(Feedback);
-
-%Feedback=reshape(Feedback,Tr,Nsubjects);
 
 cd (Datafolder)
 load('FB_cluster_raw');
@@ -28,8 +28,8 @@ clear epmap
 
 %% Set variables
 nrandom         = 1000;
-num_freq           = size(Power_tocluster,1);                 % 18 frequenties
-num_time           = size(Power_tocluster,3);                 % 31 tijdspunten
+num_freq        = size(Power_tocluster,1);                
+num_time        = size(Power_tocluster,3);                 
 indices         = 1:(num_freq*num_time);
 indicesElec     = 1:num_channels;
 pvoxels         = 990;

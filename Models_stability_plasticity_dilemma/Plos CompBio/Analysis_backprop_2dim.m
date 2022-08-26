@@ -11,19 +11,20 @@ Tr=3600;            %trials
 
 %Initialize all data matrices
 %Classic (synaptic) model
-Accuracy_conn=zeros(Tr,betas,Rep);
-ERR_conn=zeros(Tr,betas,Rep);
+Accuracy_conn=zeros(Tr,betas,Rep);                              %Accuracy
+ERR_conn=zeros(Tr,betas,Rep);                                   %Errorscore
+
 %Sync model
-Accuracy_sync=zeros(Tr,betas,Rep);
-reward=zeros(Tr,betas,Rep);
-ERR_sync=zeros(Tr,betas,Rep);
+Accuracy_sync=zeros(Tr,betas,Rep);                              %Accuracy
+reward=zeros(Tr,betas,Rep);                                     %reward
+ERR_sync=zeros(Tr,betas,Rep);                                   %Errorscore
 relevant_Gamma=zeros(500,Tr,betas,Rep);                         %gamma waves for pac measure (500 time steps)
 Theta= zeros(2,500,Tr,betas,Rep);                               %theta waves for pac measure
-synchronization_IM1=zeros(9,6,Tr,betas,Rep);
-synchronization_IM2=zeros(9,6,Tr,betas,Rep);
-synchronization_IM3=zeros(9,6,Tr,betas,Rep);
-module=zeros(2,betas,Rep);
-Switcher=zeros(Tr+1,betas,Rep);
+synchronization_IM1=zeros(9,6,Tr,betas,Rep);                    %Synchronization for module 1
+synchronization_IM2=zeros(9,6,Tr,betas,Rep);                    %Synchronization for module 2
+synchronization_IM3=zeros(9,6,Tr,betas,Rep);                    %Synchronization for module 3
+module=zeros(2,betas,Rep);                                      %Which module is used
+Switcher=zeros(Tr+1,betas,Rep);                                 %When does the network switch modules
 
 gam_wav=zeros(30,500,Tr);                                       %to combine all gamma-wave data of different modules in Processing unit
 
@@ -31,21 +32,28 @@ gam_wav=zeros(30,500,Tr);                                       %to combine all 
 
 for b=1:betas
     for r=1:Rep
-        
+        %Load data for the synaptic models and store data of each
+        %simulation in empty datamatrices
         load(['backprop_nosync_Beta',num2str(b),'Rep',num2str(r)])
         Accuracy_conn(:,b,r)=squeeze(rew)*100;
         ERR_conn(:,b,r)=squeeze(mean(Errorscore,1));
         
+        %Load data for the synaptic models and store data of each
+        %simulation in empty datamatrices
         load(['backprop_sync_Beta',num2str(b),'Rep',num2str(r)])
         
+        %All gamma waves
         gam_wav(1:9,:,:)=Phase_Input(:,1,1:500,:);
         gam_wav(10:15,:,:)=Phase_M1(:,1,1:500,:);
         gam_wav(16:21,:,:)=Phase_M2(:,1,1:500,:);
         gam_wav(22:27,:,:)=Phase_M3(:,1,1:500,:); 
         gam_wav(28:30,:,:)=Phase_Out(:,1,1:500,:); 
+        %combine gamma waves
         relevant_Gamma(:,:,b,r)=squeeze(mean(abs(gam_wav(:,:,:)),1));%extract gamma
-               
-        Theta(:,:,:,b,r)=ACC(:,1:500,:);              %extract theta
+        
+        %Theta wave
+        Theta(:,:,:,b,r)=ACC(:,1:500,:); 
+        
         Accuracy_sync(:,b,r)=squeeze(rew)*100;
         reward(:,b,r)=squeeze(rew(1,:));
         ERR_sync(:,b,r)=squeeze(mean(Errorscore,1));
@@ -53,7 +61,8 @@ for b=1:betas
         synchronization_IM1(:,:,:,b,r)=sync_IM1;
         synchronization_IM2(:,:,:,b,r)=sync_IM2;
         synchronization_IM3(:,:,:,b,r)=sync_IM3;
-
+        
+        %extract module based on LFC pointers
         if LFC(2,1)==1
             module(1,b,r)=1;
         elseif LFC(3,1)==1
@@ -139,6 +148,7 @@ Plasticity_sync(1,:,:)=mean(binned_accuracy_sync(plasticity_1,:,:),1);
 Plasticity_sync(2,:,:)=mean(binned_accuracy_sync(plasticity_2,:,:),1);
 Plasticity_sync(3,:,:)=mean(binned_accuracy_sync(plasticity_3,:,:),1);
 
+%get means and confidence intervals
 mean_plas_sync=mean(Plasticity_sync,3);
 std_plas_sync=std(Plasticity_sync,0,3);
 CI_plas_sync=2*std_plas_sync./sqrt(Rep);
@@ -153,6 +163,7 @@ mean_stab_conn=mean(Stability_conn,3);
 std_stab_conn=std(Stability_conn,0,3);
 CI_stab_conn=2*std_stab_conn./sqrt(Rep);
 
+%average again for plotting
 Plas_sync_for_paper(1,:)=mean(mean_plas_sync(2:3,:),1);
 Plas_sync_for_paper(2,:)=mean(CI_plas_sync(2:3,:),1);
 Stab_sync_for_paper(1,:)=mean(mean_stab_sync,1);
@@ -162,7 +173,6 @@ Plas_conn_for_paper(1,:)=mean(mean_plas_conn(2:3,:),1);
 Plas_conn_for_paper(2,:)=mean(CI_plas_conn(2:3,:),1);
 Stab_conn_for_paper(1,:)=mean(mean_stab_conn,1);
 Stab_conn_for_paper(2,:)=mean(CI_stab_conn,1);
-
 
 %% Synchronization of task modules
 
@@ -347,8 +357,6 @@ for i=1:size(corr_dat,2)
         else
             tf_dat_corr2(i-round(size(corr_dat,2)/2),fi,:) = abs(as).^2;
         end;
-        %tf_dat_corr(i,fi,:,2) = angle(as);
-        %tf_dat_corr(i,fi,:,3) = real(as);
         
     end % end frequency loop
 end;

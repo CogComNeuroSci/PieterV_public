@@ -19,11 +19,12 @@ Hybrid_fit_folder="/Volumes/Harde ploate/model_fitting/Hybrid_data"
 Figure_folder="/Volumes/Harde ploate/EEG_reversal_learning/Behavioral_data/figures/"
 PLV_folder="/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/PLV_data/"
 Power_folder="/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Scripts/Cluster_analyses/TF/Feedback_period"
+
 #define number of participants and number of trials
 Tr=480
-
 pp=27
 
+#get output of model fitting
 setwd(RW_fit_folder)
 RW_data<-read.delim('RW_output.csv', header=TRUE, sep = ",", quote = "\"",dec = ".", fill = TRUE)
 
@@ -42,12 +43,14 @@ Weight_AIC_dat[,10:12]<-Weight_AIC_dat[,7:9]/apply(Weight_AIC_dat[,7:9], 1, FUN=
 Weight_AIC_dat<-as.data.frame(Weight_AIC_dat)
 names(Weight_AIC_dat)<-c("Q_AIC","H_AIC","S_AIC","Delta_Q_AIC", "Delta_H_AIC", "Delta_S_AIC", "Exp_Q_AIC","Exp_H_AIC","Exp_S_AIC","Q_wAIC","H_wAIC","S_wAIC")
 
+#get phase-locking data
 setwd(PLV_folder)
 PLV_data<-read.table('PLV_data_individual.txt', header = F, sep = ";")
 PLV_data<-as.data.frame(t(PLV_data))
 PLV_data<-PLV_data[1:27,]
 names(PLV_data)<-c("Theta_contra_post_plv", "Theta_ipsi_post_plv","Theta_contra_front_plv","Theta_ipsi_front_plv","Delta_contra_plv", "Delta_ipsi_plv")
 
+#get power data
 setwd(Power_folder)
 Power_data<-read.table('Power_data_individual.txt', header = F, sep = ";")
 Power_data<-as.data.frame(t(Power_data))
@@ -57,6 +60,7 @@ names(Power_data)<-c("Theta_pow", "Delta_pow", "Alpha_pow")
 Dat_all<-cbind(Weight_AIC_dat$S_wAIC, PLV_data, Power_data)
 names(Dat_all)[1]<-"wAIC"
 
+#test correlations
 cor.test(Dat_all$wAIC, Dat_all$Theta_contra_post_plv, method="spearman")
 # Spearman's rank correlation rho
 # 

@@ -20,11 +20,13 @@ cutoff	= c(0.995, 0.99, 0.975, 0.95, 0.90)
 
 setwd("/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Cluster_data/")
 
+# Load statistic
 estobs 	= readMat("FB_Cluster_statistic.mat")
 estobs 	= estobs$statistic
 estimates 	= as.vector(estobs)
 estimates1 	= estimates[order(estimates)] 
 
+# Load random statistic
 estobs 	= readMat("FB_random_statistic.mat")
 estobs 	= estobs$statistic
 estimates 	= as.vector(estobs)

@@ -7,9 +7,10 @@ fprintf('\n*** Ready for loop ***\n')
 for s=1:num_subjects
     subject         = subject_list{s};
     
-    %stimulus-locked data
+    %% stimulus-locked data
     fprintf('\n *** Loading data *** \n')
     
+    %combine frontal and posterior data
     load(['tf_stimulus_',subject],'tf_dat_frontal')
     to_keep(:,1:32,:,:)=tf_dat_frontal(:,:,:,:);
     clear tf_dat_frontal;
@@ -19,14 +20,17 @@ for s=1:num_subjects
     
     fprintf(['\n *** Loaded stimulus data of ' subject ' *** \n'])
 
+    %get phase
     phase = angle(to_keep);
     fprintf('\n *** Saving stimulus-locked phase *** \n')
     save(['phase_Slock', subject], 'phase','-v7.3');
     clear phase
     
+    %get power
     power=abs(to_keep).^2;
     load(['tf_baseline_', subject]);
     
+    %baseline power data
     fprintf('\n *** Baselining ***\n') 
     baselined_power=zeros(size(power));
     for f=1:25
@@ -39,9 +43,10 @@ for s=1:num_subjects
     save(['power_Slock', subject], 'baselined_power','-v7.3');
     clear baselined_power
     
-    %feedback-locked data
+    %% feedback-locked data
     fprintf('\n *** Loading data *** \n')
     
+    %combine frontal and posterior data
     load(['tf_feedback_',subject],'tf_dat_frontal')
     to_keep(:,1:32,:,:)=tf_dat_frontal(:,:,:,:);
     clear tf_dat_frontal;
@@ -51,13 +56,16 @@ for s=1:num_subjects
     
     fprintf(['\n *** Loaded feedback data of ' subject ' *** \n'])
 
+    %get phase
     phase = angle(to_keep);
     fprintf('\n *** Saving feedback-locked phase *** \n')
     save(['phase_FBlock', subject], 'phase','-v7.3');
     clear phase
     
+    %get power
     power=abs(to_keep).^2;
     
+    %baseline power data
     fprintf('\n baselining\n') 
     baselined_power=zeros(size(power));
     for f=1:25

@@ -51,7 +51,7 @@ clusternr 	= 1
 ### Start clustering
 ###########################
 
-estobs 	= readMat("cluster_statistic_interaction.mat")#readMat("FB_Cluster_statistic_PE.mat")
+estobs 	= readMat("cluster_statistic_interaction.mat")
 estobs 	= estobs$statistic
 estimates1 	= as.vector(estobs)
 estimates1 	= estimates1[order(estimates1)] 

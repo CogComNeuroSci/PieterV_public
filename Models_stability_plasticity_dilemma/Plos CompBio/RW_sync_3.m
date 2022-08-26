@@ -3,10 +3,10 @@
 %}
 
 %% Defining amount of loops
-Rep=10;                 %amount of replications
+Rep=10;                 %amount of replications of one parameter setting
 T=500;                  %trialtime
-Tr=360;                 % amount of trials
-betas=11;               %beta iterations
+Tr=360;                 %amount of trials
+betas=11;               %learning rate steps
 Beta=0:1/(betas-1):1;   %learning rate values
 ITI=250;                %intertrial interval
 
@@ -30,7 +30,7 @@ decay=0.9;                  %decay parameter
 r2_acc=0.05;                %radius pMFC
 Ct=0.07;                    %coupling theta waves
 damp_acc=0.003;             %damping parameter pMFC
-acc_slope=10;
+acc_slope=10;               %slope of burst threshold function
 
 % RL unit
 lp=0.1;                     %learning rate V
@@ -49,6 +49,7 @@ R3_units=6:3:12;
 
 objective=zeros(nUnits,nUnits,Tr);
 
+%objectives are different for each part
 objective(1,R1_units,[part1,part4])=1;
 objective(2,R2_units,[part1,part4])=1;
 objective(3,R3_units,[part1,part4])=1;

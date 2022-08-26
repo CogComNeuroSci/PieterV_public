@@ -3,10 +3,10 @@
 %}
 
 %% Defining amount of loops
-Rep=10;                     % amount of replications
+Rep=10;                     % amount of replications of one parameter setting
 Tr=360;                     % amount of trials
 betas=11;                   % beta iterations
-Beta=0:1/(betas-1):1;       %learning rate values
+Beta=0:1/(betas-1):1;       % learning rate values
 
 POT=Tr/6:Tr/6:Tr;                 %point of switch to task rule 2 (trial 20)
 part1=1:POT(1);                   %first part
@@ -28,6 +28,7 @@ Activation(3,3)=1;
 %Learning objectives
 objective=zeros(nUnits,nUnits,Tr);
 
+%objectives are different for each part
 objective(1,4,[part1,part4])=1;
 objective(2,5,[part1,part4])=1;
 objective(3,6,[part1,part4])=1;

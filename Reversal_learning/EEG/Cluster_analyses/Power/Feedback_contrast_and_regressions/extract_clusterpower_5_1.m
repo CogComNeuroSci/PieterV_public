@@ -1,7 +1,4 @@
-%{
-    We want to extract power in the significant theta cluster
-%}
-
+% Define folders and variables
 Homefolder='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/';
 Datafolder='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Cluster_data/';
 
@@ -18,7 +15,7 @@ frex=logspace(log10(2), log10(48), 25);               %frequency vector for data
 n_channels=64;                                        %number of channels
 n_trials=480;                                         %number of trials
 
-
+%load channel locations
 load([Homefolder 'chanloc.mat'])
 chanlocations=chanlocations(1:n_channels);
 

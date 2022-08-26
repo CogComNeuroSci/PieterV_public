@@ -12,46 +12,56 @@ parentfolder    = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Epoched_
 newfolder       = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Cleaned_files/';     
 
 load([newfolder 'Rejections'])
-%rejection_array_F=zeros(num_subjects,Ntrials);
-%rejection_array_S=zeros(num_subjects,Ntrials);
+rejection_array_F=zeros(num_subjects,Ntrials);
+rejection_array_S=zeros(num_subjects,Ntrials);
 
-for s = 25: num_subjects
+for s = 1: num_subjects
     % set subject and subjectfolder to subject s in the loop
     subject         = subject_list{s};                      % extract subject from subject array
     fprintf('\n\n\n***subject %d: %s***\n\n\n',s,subject);  % print what subject is being processed in command window
- 
+    
+    %% First for feedback-locked epochs
     % load data set 
     EEG =   pop_loadset('filename', [subject '_epochedF.set'], 'filepath', parentfolder);
     
+    % These are the thresholds that we apply for identifying bad epochs.
+    % This is based on Makoto's preprocessing pipeline
     EEG = pop_jointprob(EEG,1,channels_to_check ,6,2,0,0,0,[],0);
     EEG = pop_eegthresh(EEG,1,channels_to_check ,-500,500,-1,2.999,2,0);
     
+    % keep track of which trials were rejected
     rejection_array_F(s,:)=EEG.reject.rejthresh+EEG.reject.rejjp;
     ind=rejection_array_F(s,:)>1;
     if sum(ind)>0
         rejection_array_F(s,ind)=1;
         clear ind
     end;
-    EEG.data(:,:,logical(rejection_array_F(s,:)))=NaN(EEG.nbchan, EEG.pnts, sum(rejection_array_F(s,:)));
     
+    %Delete trials
+    EEG.data(:,:,logical(rejection_array_F(s,:)))=NaN(EEG.nbchan, EEG.pnts, sum(rejection_array_F(s,:)));
+    %Save data
     EEG =   pop_editset(EEG, 'setname', subject);
             pop_saveset(EEG, 'filename', ['Cleaned_' subject '_F.set'], 'filepath', newfolder);
-            
+    
+    %% Now for the stimulus-locked epochs
     % load data set 
     EEG =   pop_loadset('filename', [subject '_epochedS.set'], 'filepath', parentfolder);
     
+    % These are the thresholds that we apply for identifying bad epochs.
+    % This is based on Makoto's preprocessing pipeline
     EEG = pop_jointprob(EEG,1,channels_to_check ,6,2,0,0,0,[],0);
     EEG = pop_eegthresh(EEG,1,channels_to_check ,-500,500,-1,2.999,2,0);
     
+    % keep track of which trials were rejected
     rejection_array_S(s,:)=EEG.reject.rejthresh+EEG.reject.rejjp;
-    
     ind=rejection_array_S(s,:)>1;
     if sum(ind)>0
         rejection_array_S(s,ind)=1;
         clear ind
     end;
+    %Delete trials
     EEG.data(:,:,logical(rejection_array_S(s,:)))=NaN(EEG.nbchan, EEG.pnts, sum(rejection_array_S(s,:)));
-    
+    %Save data
     EEG =   pop_editset(EEG, 'setname', subject);
             pop_saveset(EEG, 'filename', ['Cleaned_' subject '_S.set'], 'filepath', newfolder);
             

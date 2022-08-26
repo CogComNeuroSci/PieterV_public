@@ -1,7 +1,3 @@
-###################################################################
-###               Analysis Exp 4 Memory experiment              ###
-###################################################################
-
 library(R.matlab)
 
 setwd("/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Cluster_data/")

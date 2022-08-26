@@ -135,25 +135,34 @@ Data$RW_likelihood<-Data_model$Response_likelihood
 
 RW_data<-read.delim('RW_output.csv', header=TRUE, sep = ",", quote = "\"",dec = ".", fill = TRUE)
 
+#The sync model that accounted for both types of prediction errors as a control
 setwd(Sync_bis_folder)
 
 Sync_bis_data<-read.delim('Sync_output_0.csv', header=TRUE, sep = ",", quote = "\"",dec = ".", fill = TRUE)
 Sync_bis_data<-Sync_bis_data[,c(2,8)]
+
+# We compare it to the original sync model via weighted aic
 Sync_bis_data$AIC_original<-Sync_data$AIC
+#determine minimum aic
 Sync_bis_data$min_AIC<-apply(Sync_bis_data[,2:3], 1, FUN=min)
+#check delta AIC for both models
 Sync_bis_data$delta<-exp((-1/2)*(Sync_bis_data$AIC-Sync_bis_data$min_AIC))
 Sync_bis_data$delta_original<-exp((-1/2)*(Sync_bis_data$AIC_original-Sync_bis_data$min_AIC))
+#compute weighted AIC for both models
 Sync_bis_data$wAIC<-Sync_bis_data$delta/(Sync_bis_data$delta+Sync_bis_data$delta_original)
 Sync_bis_data$wAIC_original<-Sync_bis_data$delta_original/(Sync_bis_data$delta+Sync_bis_data$delta_original)
+# Original sync model explains data best if we look at mean wAIC
 mean(Sync_bis_data$wAIC)
 #0.2262788
 mean(Sync_bis_data$wAIC_original)
 #0.7737212
+
 #decode some extra variables
 for (data in c(1:(Tr*pp))){
   if (Data$Tr[data]>239 && Data$Tr[data]<255){
     Data$jump_detect[data]=0
   }
+  #Based on likelihood of given response, we compute the likelihood of the correct response
   if (Data$corr[data]==0){
     Data$weight[data]=1-Data$weight[data]
     Data$RW_corr_likelihood[data]=1-Data$RW_likelihood[data]

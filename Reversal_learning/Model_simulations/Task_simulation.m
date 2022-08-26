@@ -1,5 +1,5 @@
 
-%% Defining amount of loops
+%% Defining simulation parameters
 
 Rep=27;                 %amount of replications
 T=250;                  %trialtime
@@ -15,17 +15,17 @@ Nreversals=Nparts-1;
 % Processing module
 nUnits=6;                   %model units
 r2max=1;                    %max amplitude
-Cg=6*(2*pi)/500;                  %coupling gamma waves (sampling frequency =500)
+Cg=6*(2*pi)/500;            %coupling gamma waves (sampling frequency =500)
 Cg_R=6*(2*pi)/500;
 
 damp=0.3;                   %damping parameter
 decay=0.9;                  %decay parameter
 
 %Control module
-r2_acc=0.5;       %radius ACC
-Ct=6*(2*pi)/500;        %coupling theta waves
-damp_acc=0.01;  %damping parameter ACC
-acc_slope=10;   %acc_slope
+r2_acc=0.5;                 %radius ACC
+Ct=6*(2*pi)/500;            %coupling theta waves
+damp_acc=0.01;              %damping parameter ACC
+acc_slope=10;               %slope of ACC burst function
 
 %Critic
 lp=0.1;
@@ -66,24 +66,26 @@ end;
 
 part1=1:POT(1);                   %first part
 part2=POT(1)+1:POT(2);            %second part
-part3=POT(2)+1:POT(3);                %third part
-part4=POT(3)+1:POT(4);
+part3=POT(2)+1:POT(3);            %third part
+part4=POT(3)+1:POT(4);            %...
 part5=POT(4)+1:POT(5);
 part6=POT(5)+1:POT(6);
-part7=POT(6)+1:POT(7);            %second part
-part8=POT(7)+1:POT(8);                %third part
+part7=POT(6)+1:POT(7);            
+part8=POT(7)+1:POT(8);           
 part9=POT(8)+1:POT(9);
 part10=POT(9)+1:POT(10);
 part11=POT(10)+1:POT(11);
-part12=POT(11)+1:POT(12);            %second part
-part13=POT(12)+1:POT(13);                %third part
+part12=POT(11)+1:POT(12);            
+part13=POT(12)+1:POT(13);             
 part14=POT(13)+1:POT(14);
 part15=POT(14)+1:POT(15);
 part16=POT(15)+1:POT(16);
 
 rule_1=[part1, part3, part5, part7, part9, part11, part13, part15];
 rule_2=[part2, part4, part6, part8, part10, part12, part14, part16];   
-    
+
+
+%Learning objectives based on rules
 objective=zeros(nUnits,nUnits,Tr);
 
 objective(1,R1_units,rule_1)=0.8;
@@ -109,7 +111,7 @@ W(1:2,3:6,1)=rand(2,4);       %initial weigth strengths
 Modules=2:3;
 stm=datasample(Modules,1);
 
-LFC=zeros(3,Tr); %  ones(3,Tr)*-1;   %LFC units
+LFC=zeros(3,Tr);        %LFC units
 LFC(1,1)=1;
 LFC(stm,1)=1;
 
@@ -142,7 +144,7 @@ r2=zeros(nUnits+1,T+ITI,Tr);        %radius
 Z=zeros(nUnits,Tr);             %input matrix
 response=zeros(2,Tr);           %response record
 sync=zeros(nUnits,nUnits,Tr);   %sync matrix (correlations)
-Hit=zeros(T+ITI,Tr);                %Hit record
+Hit=zeros(T+ITI,Tr);            %Hit record
 accuracy=zeros(1,Tr);
 X=0;
 Switch_made=zeros(1,Tr);
@@ -163,14 +165,13 @@ cond=zeros(1,Tr);
             
             %updating phase code units of processing module
             r2(1:nUnits,time,trial)=squeeze(dot(Phase(:,:,time,trial),Phase(:,:,time,trial),2));  %radius
-            %Phase(:,1,time+1,trial)=Phase(:,1,time,trial)-Cg*Phase(:,2,time,trial)-damp*(r2(1:nUnits,time,trial)>r2max).*Phase(:,1,time,trial); % excitatory cells
-            %Phase(:,2,time+1,trial)=Phase(:,2,time,trial)+Cg*Phase(:,1,time,trial)-damp*(r2(1:nUnits,time,trial)>r2max).*Phase(:,2,time,trial); % inhibitory cells
-            
+            %stimulus neurons
             Phase(1:2,1,time+1,trial)=Phase(1:2,1,time,trial)-Cg*Phase(1:2,2,time,trial)-damp*(r2(1:2,time,trial)>r2max).*Phase(1:2,1,time,trial); % excitatory cells
             Phase(1:2,2,time+1,trial)=Phase(1:2,2,time,trial)+Cg*Phase(1:2,1,time,trial)-damp*(r2(1:2,time,trial)>r2max).*Phase(1:2,2,time,trial); % inhibitory cells
-            
+            %response neurons
             Phase(3:nUnits,1,time+1,trial)=Phase(3:nUnits,1,time,trial)-Cg_R*Phase(3:nUnits,2,time,trial)-damp*(r2(3:nUnits,time,trial)>r2max).*Phase(3:nUnits,1,time,trial); % excitatory cells
             Phase(3:nUnits,2,time+1,trial)=Phase(3:nUnits,2,time,trial)+Cg_R*Phase(3:nUnits,1,time,trial)-damp*(r2(3:nUnits,time,trial)>r2max).*Phase(3:nUnits,2,time,trial); % inhibitory cells
+            
             %updating phase code units in ACC
             r2(nUnits+1,time,trial)=ACC(:,time,trial)'*ACC(:,time,trial);   %radius
             ACC(1,time+1,trial)=ACC(1,time,trial)-Ct*ACC(2,time,trial)-damp_acc*(r2(nUnits+1,time,trial)>r2_acc)*ACC(1,time,trial); % ACC exc cell
@@ -245,7 +246,6 @@ cond=zeros(1,Tr);
             LFC(2,trial+1)=-LFC(2,trial);
             LFC(3,trial+1)=(LFC(3,trial)-1)*-1;
             LFC(2,trial+1)=(LFC(2,trial)-1)*-1;
-            %S(1,trial+1)=0;
         else
             LFC(3,trial+1)=LFC(3,trial);
             LFC(2,trial+1)=LFC(2,trial);
@@ -303,6 +303,7 @@ cond=zeros(1,Tr);
                 W(p,q,trial+1)=W(p,q,trial)+Beta*(objective(p,q,trial)-maxi(q,1))*maxi(p,1)*maxi(q,1);%
             end;
         end;
+        %print progress
         prog=trial
     end;
     

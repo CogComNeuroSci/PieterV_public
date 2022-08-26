@@ -3,7 +3,7 @@
 %}
 %% Defining amount of loops
 T=500;                  %trialtime
-Tr=360;                 % amount of trials
+Tr=360;                 %amount of trials
 betas=1;                %beta iterations
 Beta=[0.2, 0.8];        %learning rate values
 ITI=250;                %intertrial interval
@@ -46,6 +46,7 @@ R3_units=6:3:12;
 
 objective=zeros(nUnits,nUnits,Tr);
 
+%objectives are different for each part
 objective(1,R1_units,[part1,part4])=1;
 objective(2,R2_units,[part1,part4])=1;
 objective(3,R3_units,[part1,part4])=1;
@@ -56,7 +57,7 @@ objective(1,R3_units,[part3,part6])=1;
 objective(2,R1_units,[part3,part6])=1;
 objective(3,R2_units,[part3,part6])=1;
 
-accuracy=zeros(5,length(r2_acc),length(damp_acc),length(Ct),length(Cg),Tr);
+accuracy=zeros(5,length(r2_acc),length(damp_acc),length(Ct),length(Cg),Tr); %record accuracy for each parameter setting
 alpha =[0.2,0.5, 0.8];           %cumulation parameter of switch node
 threshold= [0.2, 0.5, 0.8];      %switch threshold
 %% simulation loops
@@ -285,7 +286,7 @@ Hit=zeros(T,Tr);                %Hit/Burst record
         end;
 
     end;
-    accuracy(Rep,a,b,l,tres,:)=rew;
+    accuracy(Rep,a,b,l,tres,:)=rew; %record accuracy
     
     %track progress
     prog = Rep * a * b * l * tres

@@ -2,7 +2,6 @@
 ###               Analysis clusters feedback                    ###
 ###################################################################
 
-
 library(R.matlab)
 
 
@@ -18,23 +17,23 @@ logspace <- function( d1, d2, n) exp(log(10)*seq(d1, d2, length.out=n))
 
 freq 				= logspace(log10(2),log10(48),25)
 time 				= seq(-500,2000, by =1000/51.2)
-timepos 			= 1:length(time)
-palette 			= c("blue", "light green", "yellow", "orange", "red")
-rgb.palette 		= colorRampPalette(palette, space = "rgb")
+timepos 		= 1:length(time)
+palette 		= c("blue", "light green", "yellow", "orange", "red")
+rgb.palette = colorRampPalette(palette, space = "rgb")
 cutoff			= c(0.990)
 negpos 			= c("Negative", "Positive")
 nfreq 			= 25
 ntime 			= 129
 nchan 			= 64
-indices 			= 1:(nfreq*ntime)
-indicesElec 		= 1:nchan
-clusternr 			= 1
+indices 		= 1:(nfreq*ntime)
+indicesElec = 1:nchan
+clusternr 	= 1
 
 
 ### Plotting
 ###########################
 
-estobs 	= readMat("cluster_statistic_interaction.mat")#readMat("FB_Cluster_statistic_PE.mat")
+estobs 	= readMat("cluster_statistic_interaction.mat")
 estobs 	= estobs$statistic
 estimates 	= as.vector(estobs)
 estimates1 	= estimates[order(estimates)] 

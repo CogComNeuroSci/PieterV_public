@@ -1,6 +1,3 @@
-###################################################################
-###               Analysis Exp 4 Memory experiment              ###
-###################################################################
 
 library(R.matlab)
 
@@ -18,7 +15,7 @@ filenames1 		= c(	"ClusterStatisticFeedback_neg_990.txt", 				"ClusterStatisticF
 ### Calculate statistics
 ###########################
 
-clusterlevel		= 3
+clusterlevel		= 3 # change this variable for each cluster that you want to test
 
 ClusterStatisticSummary = matrix(0, nrow = length(filenames1), ncol = 2)
 

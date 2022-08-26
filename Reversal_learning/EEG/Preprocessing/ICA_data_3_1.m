@@ -21,7 +21,6 @@ for s = 1:num_subjects
     EEG =   pop_loadset('filename', ['Prob_reversal_filteredforICA' subject '.set'], 'filepath', parentfolder);
     
     % ICA run
-    %EEG =   pop_runica(EEG, 'extended',1);
     EEG = pop_runica(EEG, 'extended',1,'interupt','on');
     
     pop_expica(EEG, 'weights', [newfolder '/ICA_weights_' subject '.txt']); 

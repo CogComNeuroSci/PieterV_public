@@ -1,5 +1,8 @@
 # Neural synchrony for adaptive control
 
+*https://doi.org/10.1162/jocn_a_01766*
+
+___
 ## Simulations.m file 
 Matlab code to simulate the model versions. 
   - The model to simulate is defined in the file. 
@@ -17,8 +20,8 @@ Re-analyses the open data set of Schmidt & Weissman 2014 (https://doi.org/10.137
 Simulation: Control_par_explore.m; Accumulator_par_explore.m and Frequency_par_explore.m
 Analyzing: analyses_control_explore.R; Analyses_accumulator_explore.R and Analyses_frequency_explore.R
 
-
-
+___
+for questions mail pjverbek.verbeke@ugent.be 
 
 
 

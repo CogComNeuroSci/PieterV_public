@@ -46,6 +46,7 @@ R3_units=6:3:12;
 
 objective=zeros(nUnits,nUnits,Tr);
 
+%objectives are different for each part
 objective(1,R1_units,[part1,part4])=1;
 objective(2,R2_units,[part1,part4])=1;
 objective(3,R3_units,[part1,part4])=1;
@@ -57,8 +58,8 @@ objective(2,R1_units,[part3,part6])=1;
 objective(3,R2_units,[part3,part6])=1;
 
 %accuracy matrix
-accuracy=zeros(5,length(r2_acc),length(damp_acc),length(Ct),length(Cg),Tr);
-b=1;
+accuracy=zeros(5,length(r2_acc),length(damp_acc),length(Ct),length(Cg),Tr);%record accuracy for each parameter setting
+b=1; % set 
 
 %% simulation loops
 for Rep=1:5                                                   %replications

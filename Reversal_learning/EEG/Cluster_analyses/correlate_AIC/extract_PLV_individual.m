@@ -1,3 +1,4 @@
+%% extract PLV contrast for each cluster and each participant
 cd '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/PLV_data/';
 
 load('PLV_conditions_lat_all')

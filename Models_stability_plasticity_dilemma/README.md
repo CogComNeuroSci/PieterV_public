@@ -2,6 +2,7 @@
 
 Article is available here: https://doi.org/10.1371/journal.pcbi.1006604 *PlosCompBio folder*  
 Preprint is available here: https://doi.org/10.1101/457150              *biorxiv(2018) folder*  
+___
 
 I recently did an extra effort to provide decent comments. 
 Importantly, I only did this for the PlosCompBio (the published) part.
@@ -13,4 +14,5 @@ To compensate I made a (slightly) better and well commented script for a very si
 Symplistic_model.py just demonstrates a simple oscillatory model in which 2 stimulus-response pair is synchronized and others are desynchronized.
 In my opinion it provides an excellent start to get a hang of the basic model mechanisms.
 
-*Enjoy!*
+___
+for questions mail pjverbek.verbeke@ugent.be 

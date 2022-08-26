@@ -155,7 +155,7 @@ Objective(2,R3,[part3, part6])=1;
 
 %% simulation loops
 for b=1:betas
-for r=1:Rep
+    for r=1:Rep
 
 %% Processing unit
 %Positive phase

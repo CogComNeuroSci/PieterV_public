@@ -14,16 +14,17 @@ syncUnits=12;   %model nodes for Sync model
 %Initialize all data matrices
 %Classic (synaptic) model
 Accuracy_conn=zeros(Tr,betas,Rep); %accuracy variable
-Weights_conn=zeros(nUnits,nUnits,Tr+1,betas,Rep);
+Weights_conn=zeros(nUnits,nUnits,Tr+1,betas,Rep);%Weights
+
 %Sync model
 Accuracy_sync=zeros(Tr,betas,Rep); %accuracy variable
-Weights_sync=zeros(syncUnits,syncUnits,Tr+1,betas,Rep);
+Weights_sync=zeros(syncUnits,syncUnits,Tr+1,betas,Rep);%Weights
 
 Gamma=zeros(syncUnits,2,500,Tr,betas,Rep);                      %gamma waves for pac measure (500 timesteps)
 Theta=zeros(2,500,Tr,betas,Rep);                                %theta waves for pac measure
 Synchronization=zeros(syncUnits,syncUnits,Tr,betas,Rep);        %synchronization
-module=zeros(2,betas,Rep);
-Switcher=zeros(Tr+1,betas,Rep);
+module=zeros(2,betas,Rep);                                      %Which module is used
+Switcher=zeros(Tr+1,betas,Rep);                                 %When does the network switch modules
 
 %% load data and store in data matrices
 
@@ -42,7 +43,7 @@ for b=1:betas
             load(['Beta',num2str(b),'Rep',num2str(r),'_RWsync'],'Phase','ACC','sync','rew','W','S','LFC');
             Gamma(:,:,:,:,b,r)=Phase(:,:,1:500,:);        %extract gamma
             Theta(:,:,:,b,r)=ACC(:,1:500,:);              %extract theta
-            Synchronization(:,:,:,b,r)=sync;      %extract synchronization
+            Synchronization(:,:,:,b,r)=sync;              %extract synchronization
             Accuracy_sync(:,b,r)=squeeze(rew);
             Weights_sync(:,:,:,b,r)=W;
             Switcher(:,b,r)=squeeze(S);
@@ -143,6 +144,7 @@ mean_stab_conn=mean(Stability_conn,3)*100;
 std_stab_conn=std(Stability_conn,0,3);
 CI_stab_conn=2*std_stab_conn./sqrt(Rep)*100;
 
+%Average again for making plots
 Plas_sync_for_paper(1,:)=mean(mean_plas_sync(2:3,:),1);
 Plas_sync_for_paper(2,:)=mean(CI_plas_sync(2:3,:),1);
 Stab_sync_for_paper(1,:)=mean(mean_stab_sync,1);
@@ -234,7 +236,6 @@ weights_rule1_conn=squeeze((mean_weights_conn(1,4,:,:)+mean_weights_conn(2,5,:,:
 weights_rule2_conn=squeeze((mean_weights_conn(1,5,:,:)+mean_weights_conn(2,6,:,:)+mean_weights_conn(3,4,:,:))./3);
 weights_rule3_conn=squeeze((mean_weights_conn(1,6,:,:)+mean_weights_conn(2,4,:,:)+mean_weights_conn(3,5,:,:))./3);
 
-
 std_sync_rule1=std(sync_rule1,0,3);
 std_sync_rule2=std(sync_rule2,0,3);
 std_sync_rule3=std(sync_rule3,0,3);
@@ -242,7 +243,6 @@ std_weights_rule1_sync=std(weights_rule1_sync,0,3);
 std_weights_rule2_sync=std(weights_rule2_sync,0,3);
 std_weights_rule3_sync=std(weights_rule3_sync,0,3);
 std_weights_conn=std(Weights_conn,0,5);
-
 
 CI_sync_rule1=2*(std_sync_rule1./sqrt(Rep));
 CI_sync_rule2=2*(std_sync_rule2./sqrt(Rep));

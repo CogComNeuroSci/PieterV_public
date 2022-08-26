@@ -1,3 +1,4 @@
+% Define folders and variables
 Data_folder        = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Power_data/';
 R_folder            ='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/lme_data/';
 
@@ -9,6 +10,7 @@ filename='cluster_data_conservative.txt';
 
 num_subjects=27;
 
+%write data
 filePointer = fopen(filename, 'a');
 
 fprintf(filePointer, '%d;', reshape(theta_cluster_power',1,[]));
