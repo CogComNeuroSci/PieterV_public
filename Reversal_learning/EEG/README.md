@@ -38,6 +38,7 @@ ___
 *0. electrodedistance*: For clustering, we first make a distance matrix for all electrodes. 
 
 **Power folder**
+
 First, open *Feedback_contrast_and_regressions* 
 
 *1.1 Preparing*: Z-scoring data and remove data with too late responses. 
@@ -67,9 +68,11 @@ First, open *Feedback_contrast_and_regressions*
 In the *Interactions* folder one can find the same analyses but for the interaction effect of reward and Prediction error.
 
 **PLV folder**
+
 Holds the same analyses as the power folder but for the phase locking statistic.
 
 **Correlate_AIC folder**
+
 *1. extract_power_individual*: extract power data for each cluster and each participant. 
 
 *2. extract_PLV_individual*: extract PLV data for each cluster and each participant.
