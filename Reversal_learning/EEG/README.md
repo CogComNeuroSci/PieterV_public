@@ -2,7 +2,7 @@
 
 Order of execution is:
 ---
-##1. Preprocessing
+## Preprocessing
 *1. Load_Data*: to extract all data and define electrode mapping
 *2. manclean*: record of all manual cleaning
 *3. Filter_Data*: frequency filtering data
@@ -12,19 +12,19 @@ Order of execution is:
 *7. epoch_cleaning*: removing the bad epochs
 ___
 
-##2. Time-Frequency
+## Time-Frequency
 *1. baseline_extraction+tf_stim*: extracting the time-frequency decomposition of the stimulus epochs and the baseline period
 *2. tf_feedback*: time-frequency decomposition of feedback period
 *3. Extracting_phase_and_power*: from time-frequency data extract and baseline the power and extract phase data.
 *4. Decibel_conversion*: convert power to decibel scale
 ___
 
-##3. PLV
+## PLV
 *1. PLV_conditions*: compute PLV for each condition
 *2. PLV_lateralisation*: lateralize PLV data
 ___
 
-##4. Cluster_analyses
+## Cluster_analyses
 *0. electrodedistance*: For clustering, we first make a distance matrix for all electrodes
 
 **Power folder**
@@ -53,6 +53,9 @@ Holds the same analyses as the power folder but for the phase locking statistic.
 *3. corr_AIC* : check for correlations between model evidence and effects in neural data
 ___
 
-##5. Trial_window_analyses
+## Trial_window_analyses
 *1. Locking_power* : lock power of each cluster to rule switches
 *2. regression_locking : perform linear regression for empirical power depending on model simulation power.
+___
+
+for questions contact pjverbek.verbeke@ugent.be 
