@@ -20,8 +20,11 @@ ___
 
 ## Time-Frequency
 *1. baseline_extraction+tf_stim*: extracting the time-frequency decomposition of the stimulus epochs and the baseline period.
+
 *2. tf_feedback*: time-frequency decomposition of feedback period. 
+
 *3. Extracting_phase_and_power*: from time-frequency data extract and baseline the power and extract phase data.
+
 *4. Decibel_conversion*: convert power to decibel scale. 
 ___
 
