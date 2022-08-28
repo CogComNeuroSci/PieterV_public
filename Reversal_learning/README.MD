@@ -13,6 +13,6 @@ ___
   
 *3. Model simulations:* Matlab scripts to simulate the Sync model
   
-*4. Psychopy scripts:* Scripts for doing the experiment
+*4. Psychopy scripts:* Scripts for running the experiment
 ___
 for questions mail pjverbek.verbeke@ugent.be 
