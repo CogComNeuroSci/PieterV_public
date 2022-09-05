@@ -1,5 +1,7 @@
 # EEG folder
 
+**Before analyzing the EEG data, one should have extracted the relevant trial indices from the behavioral data: see Behavioral folder**
+
 Order of execution is:
 ---
 ## Preprocessing
