@@ -1,8 +1,10 @@
 # Behavioral folder
 
+
 The file **200327_behavioral_analyses.R** contains all code to perform the analyses of behavioral data.
 *Keep in mind that this can only be done if all models are fitted*
 
+___
 **Folders contain (python) scripts for fitting all models** : one folder for each model
 *Note: The ALR model as described in the paper is here refered to as hybrid model. During the publication process, we altered the name in the paper but we did not do this in the code*
 
@@ -13,3 +15,5 @@ Every folder contains 5 scripts:
 4. *sim_data_...* : contains a function to simulate data with a given parameter set.
 5. *Estimating_PE_...* : uses functions 2-4 to fit the models, and simulate some output under the optimal parameter values. This can be run after the make_data_... file.
 
+___
+Before going to EEG data analyses, one should run the *make_RTfile_matlab.R* and the *extract_indices.m* files as this extracts the behavioral indices that are needed to perform the EEG analyses.
