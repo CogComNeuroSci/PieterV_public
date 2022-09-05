@@ -16,4 +16,4 @@ Every folder contains 5 scripts:
 5. *Estimating_PE_...* : uses functions 2-4 to fit the models, and simulate some output under the optimal parameter values. This can be run after the make_data_... file.
 
 ___
-Before going to EEG data analyses, one should run the *make_RTfile_matlab.R* and the *extract_indices.m* files as this extracts the behavioral indices that are needed to perform the EEG analyses.
+Before going to EEG data analyses, one should run the **make_RTfile_matlab.R** and the **extract_indices.m** files as this extracts the behavioral indices that are needed to perform the EEG analyses.
