@@ -13,6 +13,8 @@ ___
 *Learning to synchronize: Midfrontal theta dynamics during reversal learning.* 
 in Journal of Neuroscience (2021). 
 https://doi.org/10.1523/JNEUROSCI.1874-20.2020
+
+Data For this project can be found on: DOI 10.17605/OSF.IO/WT36F
 ___
 
 **conflict_synchrony** holds scripts for the study:
