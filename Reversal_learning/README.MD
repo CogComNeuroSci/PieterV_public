@@ -1,6 +1,7 @@
 # Learning to synchronize: Midfrontal theta dynamics during reversal learning.
 
-*https://doi.org/10.1101/2020.06.01.127175*
+For paper, see: *https://doi.org/10.1101/2020.06.01.127175*
+Data is publicly available at: *https://doi.org/10.17605/OSF.IO/WT36F*
 ___
 *1. Behavioral folder:* Folder with all python files to fit the different models to the behavioral data
   
