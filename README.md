@@ -29,4 +29,9 @@ in Neural Networks (2022)
 https://doi.org/10.1016/j.neunet.2021.11.030
 ___
 
+**Model_meta** holds scripts for the study:
+*Humans adaptively select different computational strategies in different learning environments.*
+Preprint coming soon.
+___
+
 for questions mail pjverbek.verbeke@ugent.be 
