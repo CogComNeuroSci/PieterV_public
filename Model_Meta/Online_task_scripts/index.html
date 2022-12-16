@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Department of Experimental Psychology, Ghent University</title>
+  <!loading in the plugins>
+  <script src="online_test/jspsych-6/jspsych.js"></script>
+  <script src="online_test/jspsych-6/plugins/jspsych-call-function.js"></script>
+  <link href="online_test/jspsych-6/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+</head>
+
+<script>
+  var random_ID = jsPsych.randomization.randomID(6)
+  console.log(random_ID)
+
+</script>
+
+<body>
+  <h1 style = "text-align: center; font-size: 100px;"> Welkom </h1>
+  <p style = "text-align: center; font-size: 60px;">Om deel te nemen aan het experiment, <a href="online_test/deterministic_reversal.html" onclick="location.href=this.href+'?PROLIFIC_PID='+random_ID;return false;"> Klik hier.</a> </p>
+  <p style = "text-align: center; font-size: 60px;">Bedankt! </p>
+</body>
+
+<style>
+body {
+  background-color: white;
+  color: black;
+}
+</style>

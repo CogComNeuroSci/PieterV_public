@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Department of Experimental Psychology, Ghent University</title>
+  <!loading in the plugins>
+  <script src="jspsych-6/jspsych.js"></script>
+  <script src="js/jquery-1.7.1.min.js"></script>
+  <script src="js/bowser.js"></script>
+  <script src="jspsych-6/plugins/jspsych-fullscreen.js"></script>
+  <script src="jspsych-6/plugins/jspsych-html-keyboard-response.js"></script>
+  <script src="jspsych-6/plugins/jspsych-image-keyboard-response.js"></script>
+  <script src="jspsych-6/plugins/jspsych-survey-multi-choice.js"></script>
+  <script src="jspsych-6/plugins/jspsych-survey-text.js"></script>
+  <script src="jspsych-6/plugins/jspsych-call-function.js"></script>
+  <link href="jspsych-6/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+</head>
+
+<body>
+
+</body>
+
+<style>
+body {
+  background-color: white;
+  color: black;
+}
+</style>
+
+<script>
+
+// for counterbalancing
+var Randomization_id=Math.floor(Math.random()*16)
+//get time when they started
+var today = new Date();
+var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+
+console.log(time)
+console.log("id:"+Randomization_id)
+
+var start_rule = Randomization_id%2
+
+// initializing variables
+var switch_to_fullscreen = true
+var debug_info_console = false
+var trial =1
+var practice_pass = 0
+
+// experiment variables
+var M_switch = 20
+var SD_switch = 5
+var SD_practice = 0
+var n_switches = 10
+var n_test_trials = M_switch * (n_switches+1)
+var n_practice_trials= M_switch * 2
+var n_rule = 2
+var n_stim = 4
+var rew_prob = 1
+var Feedback_congruency=[0,1]
+
+//Initialize experiment timeline
+experiment_timeline =[]
+
+// drawing random switches
+function Switch_id (M_switch, SD_switch){
+  return Math.floor(Math.random() * 2 * SD_switch) + M_switch - SD_switch
+}
+
+// making sum function
+Sum = function(arr){
+  return arr.reduce(function(a,b){
+    return a + b
+  }, 0);
+}
+
+// function to draw all random rule switch points
+function switch_randomization (n_trials, M_switch, SD_switch, n_switches){
+
+  var validation = 0
+  var Switches =[]
+
+  while(validation == 0){
+
+    var n_trial_rule1 = 0
+    var n_trial_rule2 = 0
+    var counter = 0
+    Switches = new Array(n_switches+1).fill(0)
+
+    for (counter = 0; counter< n_switches+1; counter ++){
+
+      if (counter < n_switches-1){
+        Switches[counter] = Switch_id(M_switch, SD_switch)
+      }else if (counter == n_switches-1){
+        Remaining = n_trials-Sum(Switches)
+        Difference = n_trial_rule1 - n_trial_rule2
+        Switches[counter]=Math.floor((Remaining/2)-(Difference/2))
+        Switches[counter+1]=Math.floor((Remaining/2)+(Difference/2))
+      }
+
+      if (counter % 2 == 0){
+        n_trial_rule1+=Switches[counter]
+      }else{
+        n_trial_rule2+=Switches[counter]
+      }
+    }
+    if (Math.min(...Switches)>=(M_switch-SD_switch) && Math.max(...Switches)<=(M_switch+SD_switch) && n_trial_rule1 == n_trial_rule2){
+      validation = 1
+    }
+  }
+  return Switches
+}
+
+// switch points for practice stage
+Practice_switches = switch_randomization(n_practice_trials, M_switch, SD_practice, 1)
+//console.log(Practice_switches)
+
+// switch points for test stage
+Test_switches = switch_randomization(n_test_trials, M_switch, SD_switch, n_switches)
+
+//console.log(Test_switches)
+
+// define stimuli and responses
+Stimuli_id= [...Array(n_stim+1).keys()]
+Stimuli_id.shift()
+
+var Fig_practice = ['Practice_1', 'Practice_2', 'Practice_3', 'Practice_4']
+var Fig_test = ['Test_1', 'Test_2', 'Test_3', 'Test_4']
+
+var Responses = ['f', 'j']
+
+//console.log(Fig_practice)
+//console.log(Fig_test)
+
+// randomization
+function Stimulus_randomisation (n_stim, Switches, Stimuli, phase, start){
+
+  var r=phase*2
+  var parts = Switches.length
+  var trial_id= [...Array(n_stim).keys()]
+  var trial_counter = 0
+  var Design = []
+
+  for (i=0; i<parts; i++){
+    var rule = (((i+start)%2)+1)+r //i%2+1 = 0 or 1
+    var id = jsPsych.randomization.repeat(trial_id, Math.ceil(Switches[i]/n_stim)).slice(0,Switches[i])
+    //if you want to do probabilistic feedback, uncomment line below and line 158
+    //var FB_con = jsPsych.randomization.sampleWithReplacement(Feedback_congruency, Switches[i], [1-rew_prob,rew_prob])
+
+    for (x=0; x<Switches[i]; x++){
+      if (rule ==1 || rule ==3){
+        var Correct=Responses[id[x]%2]
+      }else if (rule ==2|| rule == 4){
+        var Correct=Responses[-1*(id[x]%2)+1]
+      }
+      Design[trial_counter]={
+        Phase: phase,
+        Rule: rule,
+        Stimulus: Stimuli[id[x]],
+        CorrResp: Correct,
+        //FB_Congruency: FB_con[x]
+      }
+      trial_counter +=1
+    }
+  }
+  return Design
+}
+
+// design for practice phase
+Practice_design= Stimulus_randomisation(n_stim, Practice_switches, Fig_practice, 0, 0)
+//console.log(Practice_design)
+
+// design for testing phase
+Test_design = Stimulus_randomisation(n_stim, Test_switches, Fig_test, 1, start_rule)
+
+//console.log(Test_design)
+
+// is the experiment running from a server or not? (this determines if data is saved on server or offline)
+if (document.location.host) { // returns your host or null
+  online = true;
+} else {
+  online = false;
+};
+
+// IDs
+var Prolific_ID = jsPsych.data.getURLVariable('PROLIFIC_PID') // in url use like this: users.ugent.be/~lhvermey/exp.html?id=9999
+var random_ID = jsPsych.randomization.randomID(6)
+jsPsych.data.addProperties({Prolific_ID: Prolific_ID, random_ID: random_ID});
+
+// pre-experiment objects
+var info = {
+  type: 'html-keyboard-response',
+  choices: ['space'],
+  stimulus:"<p style='font-size: 30px; line-height: 1.4em;'>Before we can start the experiment,</p>"+
+    "<p style='font-size: 30px; line-height: 1.4em;'>We need some demographic information.</p>"+
+    "<p style='font-size: 30px; line-height: 1.4em;'>Of course, this will be processed confidentially.</p>"+
+    "<p style='font-size: 30px; line-height: 1.4em;'>Press space when you are ready to continue.</p>",
+};
+
+var demographics = {
+  type: 'survey-text',
+  questions: [
+    {prompt: 'Please type in your initials (e.g. John Doe => type JD)', required: true},
+    {prompt: 'Please give us your age (in years)', required: true},
+    {prompt: 'Please give us your gender (M/F/X)', required: true}
+  ],
+  button_label: 'Continue',
+  on_finish: function(data) {
+    var responses = JSON.parse(data.responses);
+    var code = responses.Q0;
+    var years = responses.Q1;
+    var sex = responses.Q2;
+    jsPsych.data.addProperties({
+      initials: code,
+      age: years,
+      gender: sex,
+      pc_info: JSON.stringify(bowser),
+      start_time: time
+    });
+  }
+};
+
+var informed_consent = {
+    type: 'fullscreen',
+    fullscreen_mode: switch_to_fullscreen,
+    message: "<b>INFORMED CONSENT</b><p>I hereby declare that I, as a participant in a study of the Department of Experimental Psychology at Ghent University, Belgium,</p><p>(1) have been " +
+          "informed about the tasks that I will encounter during this experiment;</p><p>(2) will participate in this experiment out of free will;</p><p>(3) give informed consent to the " +
+          "researchers to store, process, and report my data in anonymised form;</p><p>(4) am aware of the option to stop my participation in this experiment at any moment without having " +
+          "to provide a reason;</p><p>and (5) am aware of the option to ask the researchers for a summary of the results after the study is finished.</p><p>By clicking on the " +
+          "button below, you are confirming that you have read, and agree with, the informed consent outlined above.</p>",
+    button_label: 'Start the experiment!',
+    on_finish: function() {$('body').css('cursor', 'none')},
+};
+
+// General welcome instructions
+var instruct1 = {
+  type: 'image-keyboard-response',
+  stimulus: 'img/Slide1.png',
+  response_ends_trial: true,
+  stimulus_width: function() {
+    return window.innerWidth / 1.2
+  },
+  choices: ['space'],
+};
+
+// Task instructions
+var instruct2 = {
+  type: 'image-keyboard-response',
+  stimulus: 'img/Slide2.png',
+  response_ends_trial: true,
+  stimulus_width: function() {
+    return window.innerWidth / 1.2
+  },
+  choices: ['space'],
+};
+
+// Instructing about reversals
+var instruct3 = {
+  type: 'image-keyboard-response',
+  stimulus: 'img/Slide3.png',
+  response_ends_trial: true,
+  stimulus_width: function() {
+    return window.innerWidth / 1.2
+  },
+  choices: ['space'],
+};
+
+// instructions for practice phase
+var instruct4 = {
+  type: 'image-keyboard-response',
+  stimulus: 'img/Slide4.png',
+  response_ends_trial: true,
+  stimulus_width: function() {
+    return window.innerWidth / 1.2
+  },
+  choices: ['space']
+};
+
+//instructions for experimental phase
+var instruct5 = {
+    type: 'image-keyboard-response',
+    stimulus: 'img/Slide5.png',
+    response_ends_trial: true,
+    stimulus_width: function() {
+      return window.innerWidth / 1.2
+    },
+    choices: ['space'],
+    on_finish: function(){
+      trial=1
+    }
+};
+
+// instructions for redoing the practice
+var redo_practice ={
+  type: 'image-keyboard-response',
+  stimulus: 'img/Slide6.png',
+  response_ends_trial: true,
+  stimulus_width: function() {
+    return window.innerWidth / 1.2
+  },
+  choices: ['space'],
+  on_finish: function(){
+    trial=1
+  }
+};
+
+//questionnaire after practice
+var practice_checks = {
+  type: 'survey-multi-choice',
+  questions: [
+    {prompt: 'At the end of the practice block: which butterfly prefered the white flower', options: ["The green one", "The red one"], required: true},
+    {prompt: 'How many times did the preference of the green butterfly change?', options: ["0", "1", "5"], required: true},
+  ],
+  button_label: 'Continue',
+  on_start: function() {$('body').css('cursor', 'default')},
+  on_finish: function(data) {
+    var responses = JSON.parse(data.responses);
+    var butterfly= responses.Q0;
+    var reversals = responses.Q1;
+    if (butterfly == "The red one"){
+      var check_butterfly = 1
+    }else {
+      var check_butterfly = 0
+    }
+    if (reversals == "1"){
+      var check_reversals = 1
+    }else {
+      var check_reversals = 0
+    }
+    practice_pass = check_reversals + check_butterfly
+
+    data.rev_check = reversals
+    data.butterfly_check = butterfly
+    data.passed_practice = practice_pass
+    data.relevant = 1
+
+    {$('body').css('cursor', 'none')}
+  }
+};
+
+// fixation cross:
+var fixation = {
+  type: 'html-keyboard-response',
+  stimulus: "<p style='font-size: 120px;'>+</p>",
+  trial_duration: 1000,
+  response_ends_trial: true,
+  choices: ['escape']
+}
+
+// Stimulus presentation
+var stim_present = {
+    type: 'image-keyboard-response',
+    stimulus: 'img/Test_1.png',
+    stimulus_height: function() {
+      return window.innerHeight *0.9
+    },
+    choices: Responses, // valid response key
+    trial_duration: 5000,
+    response_ends_trial: true,
+    on_start: function(stim_present){
+      stim_present.stimulus = 'img/'+jsPsych.timelineVariable('Stimulus',true)+'.png'
+      if (debug_info_console) {
+        console.log('PHASE: ' + jsPsych.timelineVariable('Phase',true))
+        console.log('TRIAL: ' + trial)
+        console.log('Rule: ' + jsPsych.timelineVariable('Rule',true))
+        console.log('Stimulus:'+  'img/'+jsPsych.timelineVariable('Stimulus',true)+'.png')
+      }
+    },
+    on_finish: function(data){
+      data.Phase = jsPsych.timelineVariable('Phase',true)
+      data.trial = trial
+      data.Rule = jsPsych.timelineVariable('Rule',true)
+      data.Stimulus = jsPsych.timelineVariable('Stimulus',true)
+      data.CorrResp = jsPsych.timelineVariable('CorrResp', true)
+      data.Accuracy = (data.key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode(data.CorrResp)) ? 1:0;
+      data.ResponseTime = data.rt
+      data.screen_resolution = '' + screen.width + ' x ' + screen.height + ''
+      data.window_resolution = '' + window.innerWidth + ' x ' + window.innerHeight + ''
+      data.focus = document.hasFocus()
+      trial= trial +1
+      //console.log(data.rt)
+    }
+};
+
+// Feedback presentation
+var p = 0
+var trialFB = {
+  type: 'html-keyboard-response',
+  stimulus: function(){
+    resp = jsPsych.data.get().last(1).values()[0].key_press
+    acc = (resp == jsPsych.pluginAPI.convertKeyCharacterToKeyCode(jsPsych.timelineVariable('CorrResp', true))) ? 1:0;
+    responsetime = jsPsych.data.get().last(1).values()[0].rt
+    // if feedback is probabilistic it should be conditional on FB_con as well and not only on accuracy
+    if (resp==null){
+      p=0
+      return '<p style="font-size: 80px; line-height: 1.4em;">Too late</br> Speed up!</p>';
+    }else if (acc ==1){
+      p=10
+      return '<p style="font-size: 80px;">+ 10 points</p>';
+    }else {
+      p=0
+      return '<p style="font-size: 80px;">+ 0 points</p>';
+    }
+  },
+  trial_duration: 1000,
+  response_ends_trial: true,
+  choices:["escape"],
+  on_finish: function(data){
+    data.Phase = jsPsych.timelineVariable('Phase',true)
+    data.trial_index = trial-1
+    data.Rule = jsPsych.timelineVariable('Rule',true)
+    data.Stimulus = jsPsych.timelineVariable('Stimulus',true)
+    data.Response = resp
+    data.CorrResp = jsPsych.timelineVariable('CorrResp', true)
+    data.Accuracy = acc
+    data.ResponseTime = responsetime
+    data.screen_resolution = '' + screen.width + ' x ' + screen.height + ''
+    data.window_resolution = '' + window.innerWidth + ' x ' + window.innerHeight + ''
+    data.focus = document.hasFocus()
+    data.relevant = 1
+    data.Points = p
+  }
+};
+
+// Breaks
+var Break = {
+  type: 'html-keyboard-response',
+  choices: ['space'],
+  stimulus: function(){
+    var rew_trials= jsPsych.data.get().filter({Points: 10});
+    var total_points = rew_trials.count()*10;
+
+    return "<p style='font-size: 60px; line-height: 1.4em;'>You can take a break.</p>"+
+    "<p style='font-size: 60px; line-height: 1.4em;'>Up till now, you gained "+total_points+" points.</p>"+
+    "<p style='font-size: 60px; line-height: 1.4em;'>Press space when you are ready to continue.</p>";
+  },
+  on_finish: function(){
+    var rew_trials= jsPsych.data.get().filter({Points: 10});
+    var total_points = rew_trials.count()*10;
+    var data = jsPsych.data.get().filter({relevant: 1})
+    console.log(data)
+    var filename ='Behavioral_data_'+ Prolific_ID + '_' + total_points + '_halfway.csv'
+    saveData(filename, data.csv())
+  }
+};
+
+// Conditional break object
+var Break_if = {
+  timeline: [Break],
+  conditional_function: function () {
+    if (trial == Math.round((n_test_trials/2))){
+      return true
+    }else{
+      console.log("no break")
+      return false
+    }
+  }
+}
+
+// timeline for when they have to redo the practice
+var timeline_check = []
+Practice_design2= Stimulus_randomisation(n_stim, Practice_switches, Fig_practice, 0, 0)
+var trial_procedure_practice2 = {
+  timeline: [fixation, stim_present, trialFB],
+  timeline_variables: Practice_design,
+  randomize_order: false,
+};
+timeline_check.push(redo_practice)
+timeline_check.push(trial_procedure_practice2)
+timeline_check.push(practice_checks)
+
+var check_pass = {
+  //redo practice is een instructiescherm, trial_procedure practice zijn de trials en practice_checks zijn de controlevragen
+  timeline: timeline_check,
+  conditional_function: function(){
+    //practice_pass is de som van accuracy op de twee controlevragen, als die dus kleiner dan 2 is moet het opnieuw
+    if(practice_pass<2){
+      // ik doe de randomisatie opnieuw en maak de procedure opnieuw aan
+
+      return true;
+    }else {
+      return false;
+    }
+  }
+}
+
+// saving function
+var save_data = {
+  type: 'call-function',
+
+  func: function(){
+    var rew_trials= jsPsych.data.get().filter({Points: 10});
+    var total_points = rew_trials.count()*10;
+    var data = jsPsych.data.get().filter({relevant: 1})
+    var filename ='Behavioral_data_'+ Prolific_ID + '_' + total_points + '_full.csv'
+    if (online){
+      saveData(filename, data.csv())
+    } else {
+      data.localSave('csv',filename);
+    }
+  }
+}
+
+var fullscreen_off = {
+    type: 'fullscreen',
+    fullscreen_mode: false,
+    message: "",
+    button_label: 'Finish the experiment!'
+};
+
+var endscreen = {
+  type: 'html-keyboard-response',
+  choices: ['space'],
+  stimulus: function(){
+    var rew_trials= jsPsych.data.get().filter({Points: 10});
+    var total_points = rew_trials.count()*10;
+    var money = Math.floor(total_points/500)*.5;
+    return "<p style='font-size: 40px;line-height: 1.4em;'>You gained " +total_points+ " points.</p>"+
+      "<p style='font-size: 40px;line-height: 1.4em;'>This will result in a bonus payment of " +money+ " pounds.</p>"+
+      "<p style='font-size: 40px;line-height: 1.4em;'>This bonus payment can arrive with a small delay (couple of days).</p>"+
+      "<p style='font-size: 40px;line-height: 1.4em;'>Press space to continue</p>";
+  },
+  on_finish: function(){
+      var rew_trials= jsPsych.data.get().filter({Points: 10});
+      var total_points = rew_trials.count()*10;
+      var data = jsPsych.data.get().filter({relevant: 1})
+      var filename ='Behavioral_data_'+ Prolific_ID + '_' + total_points + '_full.csv'
+      if (online){
+        saveData(filename, data.csv())
+      } else {
+        data.localSave('csv',filename);
+      }
+    }
+};
+
+var link_finish= {
+  type: 'html-keyboard-response',
+  stimulus: `<p>You've finished the experiment. Thanks for participating!</p>
+    <p><a href="https://app.prolific.co/submissions/complete?cc=CHPTT6SD">Click here to return to Prolific and complete the study</a>.</p>`,
+  choices: "NO_KEYS"
+}
+
+var finish = {
+  timeline: [endscreen, fullscreen_off, link_finish],
+  on_start: function() {$('body').css('cursor', 'default')},
+  on_finish: function(data) {
+    var end = new Date();
+    var endtime = end.getHours() + ":" + end.getMinutes() + ":" + end.getSeconds();
+    console.log(endtime)
+    jsPsych.data.addProperties({
+      total_time: end.getTime()- today.getTime()
+    })
+  }
+};
+
+// trial procedures
+var trial_procedure_practice = {
+  timeline: [fixation, stim_present, trialFB],
+  timeline_variables: Practice_design,
+  randomize_order: false,
+};
+
+var trial_procedure_test = {
+  timeline: [fixation, stim_present, trialFB, Break_if],
+  timeline_variables: Test_design,
+  randomize_order: false
+};
+
+// saving data
+function saveData(filename, filedata) {
+  $.ajax({ // make sure jquery-1.7.1.min.js is loaded in the html header for this to work
+    type: 'post',
+    cache: false,
+    url: 'php/save_data.php', // IMPORTANT: change the php script to link to the directory of your server where you want to store the data!
+    data: {
+      filename: filename,
+      filedata: filedata
+    },
+  });
+};
+
+experiment_timeline.push(instruct1)
+experiment_timeline.push(info)
+experiment_timeline.push(demographics)
+experiment_timeline.push(informed_consent)
+experiment_timeline.push(instruct2)
+experiment_timeline.push(instruct3)
+experiment_timeline.push(instruct4)
+experiment_timeline.push(trial_procedure_practice)
+experiment_timeline.push(practice_checks)
+experiment_timeline.push(check_pass)
+experiment_timeline.push(instruct5)
+experiment_timeline.push(trial_procedure_test)
+experiment_timeline.push(finish)
+
+// run the procedures
+jsPsych.init({
+    timeline: experiment_timeline,
+    preload_images: ['img/Slide1.png', 'img/Slide2.png', 'img/Slide3.png', 'img/Slide4.png', 'img/Slide5.png', 'img/Slide6.png', 'img/Test_1.png', 'img/Practice_1.png','img/Test_2.png', 'img/Practice_2.png', 'img/Test_3.png', 'img/Practice_3.png', 'img/Test_4.png', 'img/Practice_4.png' ]
+})
+
+
+</script>
+</html>
