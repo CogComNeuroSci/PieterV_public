@@ -18,7 +18,7 @@ Vol<- c("Stable", "Reversal", "Stepwise")
 Models <- c("RW", "Mod" , "ALR", "ALRMod", "HigherMod", "Full")
 Models2 <- c("RW", "ALR" , "Mod", "ALRMod", "HigherMod", "Full")
 Models3<- c("RW", "ALR" , "Mod", "ALR_mod", "Higher_mod", "Full")
-new_modelnames <- c("Flat", "ALR", "Sets", "Sets_ALR", "Sets_learning", "Full")
+new_modelnames <- c("Flat", "ALR", "Hierarchical", "Hierarchical_ALR", "Hierarchical_learning", "Full")
 nModels = length(Models)
 resultcolumns <-c("Simulation", "Prew", "Structure", "Model", "ALR", "Mod", "High", "CRew", "Accuracy", "Lr", "Temp", "Hybrid", "Cum", "Hlr")
 simulations = 50
@@ -264,12 +264,12 @@ AIC_raster_full<-ggplot(data = AIC_aggregate, aes(x=Model, y=as.numeric(Dataset)
 
 #Combine plots and save
 Model_grids<-ggdraw() +
-  draw_plot(Stepwise_accsims, x = 0.13, y = 0.025, width = .385, height = .325) +
-  draw_plot(Reversal_accsims, x = 0, y = 0.4, width = .53, height = .235) +
-  draw_plot(Stable_accsims, x = 0.14, y = 0.675, width = .395, height = .31) +
-  draw_plot(AIC_raster_stepwise, x = .585, y = .0, width = .41, height = .375) +
-  draw_plot(AIC_raster_reversal, x = .55, y = .3, width = .45, height = .425) +
-  draw_plot(AIC_raster_stable, x = .555, y = .635, width = .435, height = .365) +
+  draw_plot(Stepwise_accsims, x = 0.13, y = 0, width = .385, height = .39) +
+  draw_plot(Reversal_accsims, x = 0, y = 0.425, width = .53, height = .23) +
+  draw_plot(Stable_accsims, x = 0.14, y = 0.675, width = .395, height = .305) +
+  draw_plot(AIC_raster_stepwise, x = .59, y = .0, width = .405, height = .43) +
+  draw_plot(AIC_raster_reversal, x = .55, y = .36, width = .45, height = .385) +
+  draw_plot(AIC_raster_stable, x = .555, y = .66, width = .435, height = .34) +
   draw_plot_label(label = c("A","B"), x=c(0.15,0.6),y=c(.975,.975), size = 10,fontface="bold")
 
 ggsave("Grid_models.jpg", Model_grids, device = "jpeg", width = 15, height = 10, units = "cm", dpi = 300)
@@ -315,7 +315,7 @@ VolMod_plot <- ggplot(IEVolMod, aes(y=wAcc, x = Structure, colour = Mod, group =
   geom_point(size = 2,position = position_dodge2(.2))+
   ggtitle("")+
   coord_cartesian(ylim = c(0, 0.6))+
-  ylab("Multiple rule sets")+
+  ylab("Hierarchical architecture")+
   xlab("")+
   scale_colour_discrete(name = "Feature present", labels=c("0" = "No", "1" = "Yes"))+
   theme_minimal()+
@@ -389,7 +389,7 @@ VolHigh_plotAIC <- ggplot(AIC_IEVolHigh, aes(y=Outcome, x = Volatility, colour =
   theme(text = element_text(size=8),plot.title = element_text(size = 8, face = "italic", hjust=0.5, family="Times"), axis.text.x = element_text(angle = 45, hjust=0.5))
 
 #Combine plots and save
-Feature_plot <- ggarrange(VolALR_plot, VolALR_plotAIC, VolMod_plot, VolMod_plotAIC, VolHigh_plot, VolHigh_plotAIC, ncol = 2, nrow = 3, common.legend = TRUE, heights=c(1,1), widths=c(1, 1, 1), labels = c("A", "B", "C","D", "E", "F"))
+Feature_plot <- ggarrange(VolALR_plot, VolALR_plotAIC, VolMod_plot, VolMod_plotAIC, VolHigh_plot, VolHigh_plotAIC, ncol = 2, nrow = 3, common.legend = TRUE, heights=c(1,1), widths=c(1, 1, 1), labels = c("A", "B", "C","D", "E", "F"),font.label = list(size = 10))
 ggsave("Feature_Volatility.jpg", Feature_plot, device = "jpeg", width = 12, height = 15, units = "cm", dpi = 300)
 
 #Now, make plots for model parameters (optimal in terms of reward accumulation)
@@ -444,12 +444,12 @@ Mod_raster<-ggplot(data = Mod_aggregate, aes(y=ds, x=Parameter, fill = value))+
   theme_classic()+
   theme(text = element_text(size=8), plot.title = element_text(size = 8, face = "bold", hjust=0.5), axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.title = element_text(size = 8), 
         legend.key.size = unit(.33, 'cm'), legend.position = "none", axis.text.y.left = element_blank())+
-  ggtitle("Sets model")+
+  ggtitle("Hierarchical model")+
   labs(x="Parameter")+
   labs(y="")+
   labs(fill="Optimised\nparameter values")
 
-#Sets_ALR model
+#Hierarchical_ALR model
 Data_ALRMod <- df[df$Model=="ALRMod",]
 ALRMod_aggregate<-aggregate(cbind(Lr, Temp, Hybrid, Cum)~ds, FUN = mean, data = Data_ALRMod)
 ALRMod_aggregate$ds <- factor(ALRMod_aggregate$ds, levels=c("Stable_100%", "Stable_70%", "Reversal_100%", "Reversal_70%", "Stepwise_70%"))
@@ -462,12 +462,12 @@ ALRMod_raster<-ggplot(data = ALRMod_aggregate, aes(y=ds, x=Parameter, fill = val
   theme_classic()+
   theme(text = element_text(size=8), plot.title = element_text(size = 8, face = "bold", hjust=0.5), axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.title = element_text(size = 8), 
         legend.key.size = unit(.33, 'cm'), legend.position = "none", axis.text.y.right = element_blank())+
-  ggtitle("Sets_ALR model")+
+  ggtitle("Hierarchical_ALR model")+
   labs(x="Parameter")+
   labs(y="Environments")+
   labs(fill="Optimised\nparameter values")
 
-#Sets_Learning model
+#Hierarchical_Learning model
 Data_HigherMod <- df[df$Model=="HigherMod",]
 HigherMod_aggregate<-aggregate(cbind(Lr, Temp, Cum, Hlr)~ds, FUN = mean, data = Data_HigherMod)
 HigherMod_aggregate$ds <- factor(HigherMod_aggregate$ds, levels=c("Stable_100%", "Stable_70%", "Reversal_100%", "Reversal_70%", "Stepwise_70%"))
@@ -480,7 +480,7 @@ HigherMod_raster<-ggplot(data = HigherMod_aggregate, aes(y=ds, x=Parameter, fill
   theme_classic()+
   theme(text = element_text(size=8), plot.title = element_text(size = 8, face = "bold", hjust=0.5), axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.title = element_text(size = 8), 
         legend.key.size = unit(.33, 'cm'), legend.position = "none", axis.text.y.left = element_blank())+
-  ggtitle("Sets_learning model")+
+  ggtitle("Hierarchical_learning model")+
   labs(x="Parameter")+
   labs(y="")+
   labs(fill="Optimised\nparameter values")
@@ -562,7 +562,7 @@ ALR_raster_2<-ggplot(data = ALR_aggregate_2, aes(y=as.numeric(Dataset), x=Parame
   labs(y="")+
   labs(fill="Z-scored estimations")
 
-#Sets model
+#Hierarchical model
 Data_Mod <- Data_AIC[Data_AIC$Model=="Mod",]
 Data_Mod$Lr <-scale(Data_Mod$Lr)
 Data_Mod$Temp <-scale(Data_Mod$Temp)
@@ -580,12 +580,12 @@ Mod_raster_2<-ggplot(data = Mod_aggregate_2, aes(y=as.numeric(Dataset), x=Parame
   scale_y_continuous(breaks = 1:length(datasets), labels= datasets, sec.axis = sec_axis(~ ., breaks = 1:length(datasets), labels = ds_labels))+
   theme(text = element_text(size=8), plot.title = element_text(size = 8, face = "bold", hjust=0.5), axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.title = element_text(size = 8), 
         legend.key.size = unit(.33, 'cm'), legend.position = "none", axis.text.y.left = element_blank())+
-  ggtitle("Sets model")+
+  ggtitle("Hierarchical model")+
   labs(x="Parameter")+
   labs(y="")+
   labs(fill="Z-scored estimations")
 
-#Sets_ALR model
+#Hierarchical_ALR model
 Data_ALR_Mod <- Data_AIC[Data_AIC$Model=="ALR_mod",]
 Data_ALR_Mod$Lr <-scale(Data_ALR_Mod$Lr)
 Data_ALR_Mod$Temp <-scale(Data_ALR_Mod$Temp)
@@ -604,12 +604,12 @@ ALR_Mod_raster_2<-ggplot(data = ALR_Mod_aggregate_2, aes(y=as.numeric(Dataset), 
   scale_y_continuous(breaks = 1:length(datasets), labels= datasets, sec.axis = sec_axis(~ ., breaks = 1:length(datasets), labels = ds_labels))+
   theme(text = element_text(size=8), plot.title = element_text(size = 8, face = "bold", hjust=0.5), axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.title = element_text(size = 8), 
         legend.key.size = unit(.33, 'cm'), legend.position = "none", axis.text.y.right = element_blank())+
-  ggtitle("Sets_ALR model")+
+  ggtitle("Hierarchical_ALR model")+
   labs(x="Parameter")+
   labs(y="Datasets")+
   labs(fill="Z-scored estimations")
 
-#Sets_Learning model
+#Hierarchical_Learning model
 Data_Higher_Mod <- Data_AIC[Data_AIC$Model=="Higher_mod",]
 Data_Higher_Mod$Lr <-scale(Data_Higher_Mod$Lr)
 Data_Higher_Mod$Temp <-scale(Data_Higher_Mod$Temp)
@@ -628,7 +628,7 @@ Higher_Mod_raster_2<-ggplot(data = Higher_Mod_aggregate_2, aes(y=as.numeric(Data
   scale_y_continuous(breaks = 1:length(datasets), labels= datasets, sec.axis = sec_axis(~ ., breaks = 1:length(datasets), labels = ds_labels))+
   theme(text = element_text(size=8), plot.title = element_text(size = 8, face = "bold", hjust=0.5), axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.title = element_text(size = 8), 
         legend.key.size = unit(.33, 'cm'), legend.position = "none", axis.text.y.right = element_blank(), axis.text.y.left = element_blank())+
-  ggtitle("Sets_learning model")+
+  ggtitle("Hierarchical_learning model")+
   labs(x="Parameter")+
   labs(y="")+
   labs(fill="Z-scored estimations")

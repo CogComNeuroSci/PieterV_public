@@ -169,7 +169,7 @@ def RW_execution(worker = 0):
 
     return
 
-#Parameter and model recovery for Sets model (terminology has changed from Error to Sets model during writing)
+#Parameter and model recovery for Hierarchical model (terminology has changed from Error to Hierarchical model during writing)
 def Error_execution(worker = 0):
     #Choose a task design to simulate on
     subject = Errorsamples[int(np.floor(worker%ndes))]
@@ -333,7 +333,7 @@ def ALR_execution(worker = 0):
     np.save(ALR_folder + "Recovery_data_{0}.npy".format(worker), Data_dir, allow_pickle = True)
 
     return
-#Parameter and model recovery for Sets_ALR model (terminology has changed from ALRError to Sets_ALR model during writing)
+#Parameter and model recovery for Hierarchical_ALR model (terminology has changed from ALRError to Hierarchical_ALR model during writing)
 def ALRError_execution(worker = 0):
     subject = ALRErrorsamples[int(np.floor(worker%ndes))]
     file = Design_folder + "Data_subject_{0}.csv".format(subject)
@@ -414,7 +414,7 @@ def ALRError_execution(worker = 0):
 
     return
 
-#Parameter and model recovery for Sets_Learning model (terminology has changed from Learning to Sets_Learning model during writing)
+#Parameter and model recovery for Hierarchical_Learning model (terminology has changed from Learning to Hierarchical_Learning model during writing)
 def Learning_execution(worker = 0):
 
     #Choose a task design to simulate on

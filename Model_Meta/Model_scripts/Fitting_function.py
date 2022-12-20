@@ -59,7 +59,7 @@ elif dataset =="Mukherjee":
 print(pplist)
 print(nstim)
 #List with modelnames, some of these names changed during writing
-#Correct list as in the paper would be ["Flat", "Sets", "ALR", "Sets_ALR", "Sets_Learning", "Full"]
+#Correct list as in the paper would be ["Flat", "Hierarchial", "ALR", "Hierarchical_ALR", "Hierarchical_Learning", "Full"]
 Models = ["RW", "Error", "ALR", "ALR_Error", "Learning", "Full"]
 
 cp = 18#cpu_count()
