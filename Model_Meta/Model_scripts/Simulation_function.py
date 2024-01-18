@@ -26,11 +26,11 @@ def simulate_data( lr = 0.8, temp = 0.4, hybrid = 0, cumul = 0, hlr = 0, thresho
         if sub>9:
             new_filename = folder + file_name[-19:-4]+ "_" + str(simnr) + ".csv"
         elif sub > 99:
-            new_filename = folder + file_name[-20:-4]+ "_" + str(simnr) + ".csv"
+            new_filename = folder + file_name[-21:-4]+ "_" + str(simnr) + ".csv"
         else:
             new_filename = folder + file_name[-18:-4]+ "_" + str(simnr) + ".csv"
     else:
-        new_filename = file_name[0:-4] + "_Simulation" + str(simnr)+ ".csv"
+        new_filename = folder + "Data_subject_" + str(sub) + "_" + str(simnr) + ".csv" #file_name[0:-4] + "_Simulation" + str(simnr)+ ".csv"
 
     column_list = ["Rule", "Stimulus", "Response", "CorResp", "FBcon", "Reward", "Expected value", "PE_estimate_low", "PE_estimate_high","Response_likelihood","Module"]
     simulated_data = pd.DataFrame(columns=column_list)

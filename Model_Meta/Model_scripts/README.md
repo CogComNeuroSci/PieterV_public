@@ -40,27 +40,41 @@ Provides code to fit models on a dataset and perform this in parallel computatio
 
 ___
 
-## job_script_HPC.pbs
+## job_script_fit.pbs
 
 Provides code to perform model fitting in parallel on the High performance computing system of Ghent University.
 
 ___
 
-## Make_designs.py
+## Optimize function.py
 
-Provides code to make a task design in each environment of interest.
-
-___
-
-## Optimize_function.py
-
-Provides a function to compute the accumulated reward under a specified set of parameter values.
+Provides a function to compute the cumulated reward for a given dataset under specified model parameters
 
 ___
 
-## optim_reward_exec.py
+## Optimize_function_new.py
 
-Provides code to estimate the parameters that optimize accumulated reward on a given environment.
+Provides code/ a function to optimize (in terms of cumulated reward) each of the six models to a given empirical dataset.
+
+**The dataset for which one wants to execute the model fitting should be specified at the top of this file**
+
+___
+
+## executable_opt.py
+
+Provides code to optimize models (in terms of cumulated reward) on a dataset and perform this in parallel computation.
+
+___
+
+## job_script_Optimize.pbs
+
+Provides code to perform model optimization (in terms of cumulated reward) in parallel on the High performance computing system of Ghent University.
+
+___
+
+## RNN.py
+
+Provides code to optimize an RNN on each dataset and evaluate the activity.
 
 ___
 

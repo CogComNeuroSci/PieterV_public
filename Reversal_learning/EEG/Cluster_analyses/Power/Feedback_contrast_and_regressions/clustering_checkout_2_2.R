@@ -12,7 +12,7 @@ library(R.matlab)
 ### Distance matrix
 ###########################
 
-setwd("/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Cluster_data/")
+setwd("/Volumes/Harde ploate/catastrophic forgetting/EEG_reversal_learning/EEG_data/Cluster_data/")
 
 distance	= readMat("ElectrodeDistance.mat")
 distance	= data.frame(distance$epmap)
@@ -116,8 +116,8 @@ for(c in 1:length(cutoff)){
               for(timei in 1:length(times)){
                 
                 rowcheck 	= clusterlocations[clusterlocations$freq==freqs[row] 	, "voxelnumber"]
-                colcheck 	= clusterlocations[clusterlocations$time==times[timei] 	, "voxelnumber"]
-                timecheck 	= clusterlocations[clusterlocations$chan==chans[col], "voxelnumber"]
+                colcheck 	= clusterlocations[clusterlocations$chan==chans[col] 	, "voxelnumber"]
+                timecheck 	= clusterlocations[clusterlocations$time==times[timei], "voxelnumber"]
                 
                 rowcheck 	= rowcheck[rowcheck %in% colcheck]
                 rowcheck 	= rowcheck[rowcheck %in% timecheck]

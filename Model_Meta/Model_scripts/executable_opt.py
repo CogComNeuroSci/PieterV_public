@@ -1,4 +1,4 @@
-import Fitting_function as Fit
+import Optimize_function_new as Opt
 import numpy as np
 from   multiprocessing import Pool
 
@@ -11,4 +11,4 @@ cp = 18
 worker_pool = []
 
 with Pool(cp) as pool:
-    result = pool.map(Fit.Fitting_execution, np.arange(cp))
+    result = pool.map(Opt.Fitting_execution, np.arange(cp))

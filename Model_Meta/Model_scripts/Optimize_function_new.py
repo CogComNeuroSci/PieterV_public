@@ -5,16 +5,17 @@
 import numpy as np
 import pandas as pd
 import time
+from scipy import optimize
 
 #Own functions
-import Prep_functions as funct
+import Optimize_function as of
 import Simulation_function as Sims
 
 #specify dataset
-dataset ="Goris/Volatile"
+dataset ="Hein"
 
 Design_folder = "/data/gent/430/vsc43099/Model_study/Behavioral_data/"+ dataset +"/"#"/Users/pieter/Desktop/ModelRecoveryExplore/Data_to_fit/"+dataset+"/"
-result_folder = "/data/gent/430/vsc43099/Model_study/fitted_data/"+ dataset +"/"#"/Users/pieter/Desktop/ModelRecoveryExplore/Fitted_data/"+dataset+"/"#
+result_folder = "/data/gent/430/vsc43099/Model_study/Optimal_data/"+ dataset +"/"#"/Users/pieter/Desktop/ModelRecoveryExplore/Fitted_data/"+dataset+"/"#
 
 if dataset =="Verbeke":
     pplist=np.zeros((30))
@@ -95,6 +96,11 @@ Result_dict = {
     "LogLik":[]
 }
 
+#Function for optimizing model parameters
+def estimation (file_name = "sim_data.csv", bounds = ((0,1),(0,100), (0,1), (0,1), (0,1), (0.49,0.49)), nstim =2):
+    estim_param = optimize.differential_evolution(of.Optim_rew, bounds, args =(tuple([file_name, nstim])), maxiter = 5000, tol = 0.01)
+    return estim_param
+
 #Fit models
 def Fitting_execution(worker = 0):
     #from the used cpu, determine what model is fitted and which subject to use
@@ -116,10 +122,10 @@ def Fitting_execution(worker = 0):
         Result_dict["Subject"].append(i)
 
         #Fit model
-        est = funct.estimation(file, all_bounds[m], nstim)
+        est = estimation(file, all_bounds[m], nstim)
         print("done fitting " + str(m) + " " + str(i))
         #Simulate data with fitted parameters
-        Sims.simulate_data(est.x[0], est.x[1], est.x[2], est.x[3], est.x[4], threshold = .49, file_name = file, folder =result_folder, simnr=m, sub = i, fit = True, nstim= nstim)
+        Sims.simulate_data(est.x[0], est.x[1], est.x[2], est.x[3], est.x[4], threshold = .49, file_name = file, folder =result_folder, simnr=m, sub = i, fit = False, nstim= nstim)
 
         #Store parameter values
         Result_dict["Lr"].append(est.x[0])
@@ -142,6 +148,6 @@ def Fitting_execution(worker = 0):
             print("\n *************************************\n")
 
     df = pd.DataFrame.from_dict(Result_dict)
-    df.to_csv(result_folder + "/Fit_data_{0}_{1}.csv".format(Models[m], worker))
+    df.to_csv(result_folder + "/Opt_data_{0}_{1}.csv".format(Models[m], worker))
 
     return

@@ -1,7 +1,7 @@
 % Define folders and variables
-Homefolder          ='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/';
-Datafolder          ='/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Cluster_data/';
-figfolder           = '/Volumes/Harde ploate/EEG_reversal_learning/EEG_data/Figures/Power_Cluster';
+Homefolder          ='/Volumes/Harde ploate/catastrophic forgetting/EEG_reversal_learning/EEG_data/';
+Datafolder          ='/Volumes/Harde ploate/catastrophic forgetting/EEG_reversal_learning/EEG_data/Cluster_data/';
+figfolder           = '/Volumes/Harde ploate/catastrophic forgetting/EEG_reversal_learning/EEG_data/Figures/Power_Cluster';
 
 %load channel locations
 load([Homefolder 'chanloc.mat'])
@@ -9,10 +9,10 @@ chanlocations=chanlocations(1:64);
 
 %load cluster data and extract cluster coordinates in
 %time-frequency-channel space
-Data_actual_Negative=readtable([Datafolder 'OverviewClustersFeedbackCutoff0.99Negative.txt']);
+Data_actual_Negative=readtable([Datafolder 'OverviewClustersFeedbackCutoff_bis0.99Negative.txt']);
 Data_actual_Negative=table2array(Data_actual_Negative);
 
-Data_actual_Positive=readtable([Datafolder 'OverviewClustersFeedbackCutoff0.99Positive.txt']);
+Data_actual_Positive=readtable([Datafolder 'OverviewClustersFeedbackCutoff_bis0.99Positive.txt']);
 Data_actual_Positive=table2array(Data_actual_Positive);
 
 cluster1_actual_negative=Data_actual_Negative(:,2)==1;
@@ -45,19 +45,19 @@ n_trials=480;                                         %number of trials
 %channel domain
 cluster_data=NaN(length(frex),n_channels,length(new_feedback_time),3);
 for i=1:size(cluster1_pos,1)
-    cluster_data(cluster1_pos(i,3),cluster1_pos(i,5),cluster1_pos(i,4),1)=cluster1_pos(i,6);
+    cluster_data(cluster1_pos(i,3),cluster1_pos(i,4),cluster1_pos(i,5),1)=cluster1_pos(i,6);
 end;
 theta_contour=isnan(squeeze(nanmean(cluster_data(:,:,:,1),2)));
 theta_channels=nansum(nansum(cluster_data(:,:,:,1),3),1)~=0;
 
 for i=1:size(cluster1_neg,1)
-    cluster_data(cluster1_neg(i,3),cluster1_neg(i,5),cluster1_neg(i,4),2)=cluster1_neg(i,6);
+    cluster_data(cluster1_neg(i,3),cluster1_neg(i,4),cluster1_neg(i,5),2)=cluster1_neg(i,6);
 end;
 delta_contour=isnan(squeeze(nanmean(cluster_data(:,:,:,2),2)));
 delta_channels=nansum(nansum(cluster_data(:,:,:,2),3),1)~=0;
 
 for i=1:size(cluster2_neg,1)
-    cluster_data(cluster2_neg(i,3),cluster2_neg(i,5),cluster2_neg(i,4),3)=cluster2_neg(i,6);
+    cluster_data(cluster2_neg(i,3),cluster2_neg(i,4),cluster2_neg(i,5),3)=cluster2_neg(i,6);
 end;
 alpha_contour=isnan(squeeze(nanmean(cluster_data(:,:,:,3),2)));
 alpha_channels=nansum(nansum(cluster_data(:,:,:,3),3),1)~=0;
@@ -67,9 +67,9 @@ alpha_channels=nansum(nansum(cluster_data(:,:,:,3),3),1)~=0;
 cluster_data=squeeze(nansum(cluster_data,4));
 
 %tabulate cluster data and extract peak channels
-th= tabulate(cluster1_pos(:,5));
-del= tabulate(cluster1_neg(:,5));
-al= tabulate(cluster2_neg(:,5));
+th= tabulate(cluster1_pos(:,4));
+del= tabulate(cluster1_neg(:,4));
+al= tabulate(cluster2_neg(:,4));
 
 [~, theta_peakchannels]=sort(th(:,2),'descend');
 [~, delta_peakchannels]=sort(del(:,2),'descend');
@@ -83,7 +83,7 @@ al=al(alpha_peakchannels,1);
 figure(1)
 clf
 subplot(1,2,1)
-contourf(new_feedback_time, frex, squeeze(cluster_data(:,th(6),:)),100 ,'LineStyle','none')
+contourf(new_feedback_time, frex, squeeze(cluster_data(:,th(1),:)),100 ,'LineStyle','none')
 colormap jet
 set(gca, 'YScale', 'log')
 xticks([-500,0,500,1000])

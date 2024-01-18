@@ -31,7 +31,9 @@ ___
 
 **Model_meta** holds scripts for the study:
 *Humans adaptively select different computational strategies in different learning environments.*
-Preprint coming soon.
+
+Recently accepted at Psychological Review.
+Preprint available at https://doi.org/10.1101/2023.01.27.525944
 ___
 
 for questions mail pjverbek.verbeke@ugent.be 

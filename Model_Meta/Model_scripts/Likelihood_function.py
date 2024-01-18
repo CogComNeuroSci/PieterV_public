@@ -20,7 +20,7 @@ def logL(parameter, file_name, nstim):
     ntrials = data.shape[0]                 #Number of trials
 
     logLik = 0                              #Initialize loglikelihood
-    Weights=np.ones(nm,ns,nr)) * 0.5        #Initialize weights
+    Weights=np.ones((nm,ns,nr)) * 0.5       #Initialize weights
     Value = np.ones((nm))/nr                #Initialize reward expectation
     module = 0                              #Initialize module
     Switch_neuron = 0                       #Initialize switch neuron

@@ -5,10 +5,6 @@
 Scripts are made in R-studio
 
 ---
-## Descriptive analyses.R
-
-Provides code to make some descriptive (mean accuracy) plots for all empirical datasets
-___
 
 ## Fitting_analyses.R
 
@@ -23,6 +19,13 @@ Extracts all data from model simulations
 Additionally, it performs the linear mixed model regressions. 
 
 And it provides code to make all plots that are provided in the paper.
+
+___
+
+## LearningCurves.R
+
+Provides code to make some descriptive (mean accuracy) plots for the empirical datasets as well as model fit. Most of these figures are shown in the supplementary materials but some data is also shown in Figure 2 of the manuscript
+
 ___
 
 ## Recovery_analyses.R

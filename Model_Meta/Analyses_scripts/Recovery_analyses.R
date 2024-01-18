@@ -13,8 +13,8 @@ Endfolder = "/Users/pieter/Desktop/Model_Study/Analyses_results/"
 
 #Define model labels
 Models <- c("RW", "ALR", "Error", "ALR_Error", "Learning", "Full")
-new_labels <- c("RW", "ALR", "Hierarchical","Hierarchical_ALR", "Hierarchical_learning", "Full")
-All <- c("True","RW", "ALR", "Hierarchical","Hierarchical_ALR", "Hierarchical_learning", "Full")
+new_labels <- c("RW", "ALR", "Sets","Sets_ALR", "Sets_learning", "Full")
+All <- c("True","RW", "ALR", "Sets","Sets_ALR", "Sets_learning", "Full")
 
 #Make dataframes and lists
 nModels = length(Models)
@@ -236,7 +236,7 @@ Hlr_plot<-ggplot(data= Parameters, aes(fill=Type, y=Hlr, x=Model)) +
   ylim(0,1.1)
 
 Distributions_recovery_plot <- ggarrange(Lr_plot, Temp_plot, Hybrid_plot, Cum_plot, Hlr_plot, common.legend = TRUE)
-ggsave("Parameter_distributions_recovery.jpg", Distributions_recovery_plot, device = "jpeg", width = 15, height = 12, units = "cm", dpi = 300, path = Endfolder)
+ggsave("Parameter_distributions_recovery.jpg", Distributions_recovery_plot, device = "jpeg", width = 12, height = 10, units = "cm", dpi = 300, path = Endfolder)
 
 #Now we compute the actual recovery as the correlation between true and estimated parameters
 Recovery<- data.frame(matrix(vector(),nModels*5,3))
@@ -275,11 +275,11 @@ Recovery_raster<-ggplot(data = Recovery, aes(y=Parameter, x=Model, fill = Recove
   ggtitle("Parameter recovery")+
   labs(x="Simulated model")+
   labs(y="Parameter")+
-  labs(fill="Recovery\nas corr[True, est])")
+  labs(fill="Recovery\nas corr[True, est]")
 
 ggsave("Parameter_recovery.jpg", Recovery_raster, device = "jpeg",  width = 10, height = 7.5, units = "cm", dpi = 300, path = Endfolder)
 
 #Both recovery plots are combined in one figure
 recovery_both<- ggarrange(Recovery_raster, AIC_raster,labels = c( "A", "B"))
-ggsave("Recovery_both.jpg", recovery_both, device ="jpeg", width = 17, height = 8.5, units ="cm", dpi=300, path =Endfolder )
+ggsave("Recovery_both.jpg", recovery_both, device ="jpeg", width = 15, height = 6, units ="cm", dpi=300, path =Endfolder )
 

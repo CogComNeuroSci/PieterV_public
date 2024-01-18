@@ -129,7 +129,7 @@ for (ds in datasets){
   Parameters_plot <- ggarrange(Lr_plot, Temp_plot, Hybrid_plot, Cumul_plot, Hlr_plot, ncol = 3, nrow = 2)
   ggsave("Fitted_parameters.jpg", Parameters_plot, device = "jpeg", width = 25, height = 15, units = "cm", dpi = 300, path = Homefolder)
 
-  #Make empty dataframes for LL, AIC and BIC
+  #Make empty dataframes for LL, AIC and BIC but also explained variance
   subj = length(pplist)
   LL <- data.frame(matrix(vector(), nrow = subj, ncol = nModels + 2))
   names(LL)<-c("Subject", "Min", "RW", "ALR",  "Mod", "ALR_mod", "Higher_mod", "Full")
@@ -139,6 +139,9 @@ for (ds in datasets){
 
   BIC <- data.frame(matrix(vector(), nrow = subj, ncol = nModels + 2))
   names(BIC)<-c("Subject", "Min", "RW", "ALR", "Mod", "ALR_mod", "Higher_mod", "Full")
+  
+  Variance_explained <- data.frame(matrix(vector(), nrow = subj, ncol = nModels + 3))
+  names(Variance_explained)<-c("Subject", "Dataset", "Lower_bound", "RW", "ALR", "Mod", "ALR_mod", "Higher_mod", "Full")
 
   #Fill in a lot of that dataframe
   id <- which (datasets == ds)
@@ -168,6 +171,7 @@ for (ds in datasets){
     LL$Subject[j]<- j
     AIC$Subject[j]<-j
     BIC$Subject[j]<-j
+    Variance_explained$Subject[j] <- j
   
     Likdat <- Data$LogLik[Data$Subject==pplist[j]]
     subdat <- read.delim(paste("Data_Subject_", pplist[j], "_0.csv", sep=""), header = TRUE, sep = ",", quote = "\"",dec = ".", fill = TRUE)
@@ -176,6 +180,9 @@ for (ds in datasets){
     results$Trials[results$Subject == j+1000*id] <- Ndat
     
     LL[j,3:8] <- -Likdat
+    Variance_explained[j, 4:9] <- Likdat
+    Variance_explained$Lower_bound[j] <- Ndat*log(.5)
+    Variance_explained$Dataset[j] <- ds
   
     #Compute AIC from log likelihood
     AIC$RW[j] <- 4 - (2*Likdat[1])
@@ -192,7 +199,6 @@ for (ds in datasets){
     BIC$ALR_mod[j] <- 4*n - (2*Likdat[4])
     BIC$Higher_mod[j] <- 4*n - (2*Likdat[5])
     BIC$Full[j] <- 5*n - (2*Likdat[6])
-  
   }
   
   #Compute weighted measures by determining the distance of model fit from the most optimal (min) model fit and performing an exponential transformations
@@ -245,7 +251,14 @@ for (ds in datasets){
   LL$Sum <- rowSums(LL[,15:20])
   AIC$Sum <- rowSums(AIC[,15:20])
   BIC$Sum <- rowSums(BIC[,15:20])
-
+  
+  Variance_explained$eRW <- (abs(Variance_explained$Lower_bound) - abs(Variance_explained$RW)) / abs(Variance_explained$Lower_bound)
+  Variance_explained$eALR <- (abs(Variance_explained$Lower_bound) - abs(Variance_explained$ALR)) / abs(Variance_explained$Lower_bound)
+  Variance_explained$eMod <- (abs(Variance_explained$Lower_bound) - abs(Variance_explained$Mod)) / abs(Variance_explained$Lower_bound)
+  Variance_explained$eALR_mod <- (abs(Variance_explained$Lower_bound) - abs(Variance_explained$ALR_mod)) / abs(Variance_explained$Lower_bound)
+  Variance_explained$eHigher_mod <- (abs(Variance_explained$Lower_bound) - abs(Variance_explained$Higher_mod)) / abs(Variance_explained$Lower_bound)
+  Variance_explained$eFull <- (abs(Variance_explained$Lower_bound) - abs(Variance_explained$Full)) / abs(Variance_explained$Lower_bound)
+  
   #Add these weighted measures to the dataframes
   for (i in seq(nModels)){
     for (j in seq(subj)){
@@ -322,8 +335,17 @@ for (ds in datasets){
   #Store everything in a dataframe and save it
   if (id ==1){
     all_data <-results
+    explained_variance <- Variance_explained
   }else{
     all_data <- rbind(all_data,results)
+    explained_variance <- rbind(explained_variance,Variance_explained)
   }
 }
 write.csv(all_data, paste(resultsfolder, "all_data.csv"), row.names = FALSE)
+
+d <- aggregate(.~ Dataset, data = explained_variance, FUN = mean)
+
+d$max <- apply(d[,10:15], 1, FUN = max)*100
+d$min <- apply(d[,10:15], 1, FUN = min)*100
+d$diff <- d$max-d$min
+
